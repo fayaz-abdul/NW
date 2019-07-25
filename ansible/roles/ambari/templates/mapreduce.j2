@@ -1,0 +1,24 @@
+{
+  "mapred-site": {
+    "properties": {
+      "mapreduce.map.output.compress": "{{ mapreduce_map_output_compress }}",
+      "mapreduce.job.reduce.slowstart.completedmaps": "{{ mapreduce_job_reduce_slowstart_completedmaps }}",
+      "mapreduce.output.fileoutputformat.compress": "{{ mapreduce_output_fileoutputformat_compress }}",
+      "mapreduce.task.io.sort.mb": "{{ mapreduce_task_io_sort_mb }}",
+      "yarn.app.mapreduce.am.resource.mb": "{{ yarn_app_mapreduce_am_resource_mb }}",
+      "mapreduce.map.java.opts": "{{ mapreduce_map_java_opts }}",
+      "mapreduce.reduce.java.opts": "{{ mapreduce_reduce_java_opts }}",
+      "yarn.app.mapreduce.am.command-opts": "{{ yarn_app_mapreduce_am_command_opts }}",
+      "mapreduce.map.memory.mb": "{{ mapreduce_map_memory_mb }}",
+      "mapreduce.reduce.memory.mb": "{{ mapreduce_reduce_memory_mb }}",
+      "mapreduce.jobtracker.staging.root.dir": "{{ mapreduce_jobtracker_staging_root_dir }}"
+    }
+  }
+},
+{
+  "mapred-env": {
+    "properties": {
+      "mapred_log_dir_prefix": "{{ log_dir }}/mapreduce"
+    }
+  }
+}

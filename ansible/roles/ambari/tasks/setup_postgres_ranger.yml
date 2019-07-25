@@ -1,0 +1,117 @@
+---
+- name: Ensure 'ranger_policy' has access to the ranger db
+  postgresql_user:
+    name: "{{ ranger_policy_db_user }}"
+    password: "{{ ranger_policy_db_password }}"
+    role_attr_flags: NOSUPERUSER,CREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Create 'ranger_policy' DB
+  postgresql_db:
+    name: "{{ ranger_policy_db_name }}"
+    encoding: 'UTF-8'
+    owner: "{{ ranger_policy_db_user }}"
+    login_host: "{{ database_master }}"
+    login_password: "{{ ranger_policy_db_password }}"
+    login_user: "{{ ranger_policy_db_user }}"
+
+- name: Remove unnecessary Privileges from 'ranger_policy' user
+  postgresql_user:
+    name: "{{ ranger_policy_db_user }}"
+    password: "{{ ranger_policy_db_password }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Grant privileges to ranger policy user for ranger policy db
+  postgresql_privs:
+    db: "{{ ranger_policy_db_name }}"
+    privs: all
+    roles: "{{ ranger_policy_db_user }}"
+    type: database
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+
+- name: Ensure 'ranger_audit' has access to the ranger db
+  postgresql_user:
+    name: "{{ ranger_audit_db_user }}"
+    password: "{{ ranger_audit_db_password }}"
+    role_attr_flags: NOSUPERUSER,CREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Create 'ranger_audit' DB
+  postgresql_db:
+    name: "{{ ranger_audit_db_name }}"
+    encoding: 'UTF-8'
+    owner: "{{ ranger_audit_db_user }}"
+    login_host: "{{ database_master }}"
+    login_password: "{{ ranger_audit_db_password }}"
+    login_user: "{{ ranger_audit_db_user }}"
+
+- name: Remove unnecessary Privileges from 'ranger_policy' user
+  postgresql_user:
+    name: "{{ ranger_audit_db_user }}"
+    password: "{{ ranger_policy_db_password }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Grant privileges to ranger audit user for ranger audit db
+  postgresql_privs:
+    db: "{{ ranger_audit_db_name }}"
+    privs: all
+    roles: "{{ ranger_audit_db_user }}"
+    type: database
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+
+- name: Ensure 'kms db user' has access to the kms db
+  postgresql_user:
+    name: "{{ kms_db_user }}"
+    password: "{{ kms_db_password }}"
+    role_attr_flags: NOSUPERUSER,CREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Create 'kms db'
+  postgresql_db:
+    name: "{{ kms_db_name }}"
+    encoding: 'UTF-8'
+    owner: "{{ kms_db_user }}"
+    login_host: "{{ database_master }}"
+    login_password: "{{ kms_db_password }}"
+    login_user: "{{ kms_db_user }}"
+
+- name: Remove unnecessary Privileges from 'ranger kms user'
+  postgresql_user:
+    name: "{{ kms_db_user }}"
+    password: "{{ kms_db_password }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Grant privileges to ranger kms user for ranger kms db
+  postgresql_privs:
+    db: "{{ kms_db_name }}"
+    privs: all
+    roles: "{{ kms_db_user }}"
+    type: database
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"

@@ -1,0 +1,90 @@
+---
+- name: Ensure 'ambari' has access to the ambari db
+  postgresql_user:
+    name: ambari
+    password: "{{ ambari_db_password }}"
+    role_attr_flags: NOSUPERUSER,CREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Create Ambari DB
+  postgresql_db:
+    name: ambari
+    encoding: 'UTF-8'
+    owner: ambari
+    login_host: "{{ database_master }}"
+    login_password: "{{ ambari_db_password }}"
+    login_user: "ambari"
+
+- name: Remove unnecessary Privileges from ambari db user
+  postgresql_user:
+    name: ambari
+    password: "{{ ambari_db_password }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+
+- name: Create PgPass for Root by the current running user
+  lineinfile:
+    dest: "~/.pgpass"
+    line: "{{ database_master }}:{{ db_port }}:ambari:{{ db_root_user }}:{{ root_db_password }}"
+    mode: 0600
+    create: yes
+  become: no
+
+- name: Update PgPass for Ambari by the current running user
+  lineinfile:
+    dest: "~/.pgpass"
+    line: "{{ database_master }}:{{ db_port }}:ambari:ambari:{{ ambari_db_password }}"
+    mode: 0600
+    create: yes
+  become: no
+
+- name: Create ambari db Schema
+  shell: "psql -h {{ database_master }} -p {{ db_port }} -U ambari ambari -c 'CREATE SCHEMA IF NOT EXISTS ambari AUTHORIZATION ambari;'"
+  become: no
+  args:
+    creates: /.ambari_db_provisioned
+
+- name: Change ambari db schema to be owned by ambari
+  shell: "psql -h {{ database_master }} -p {{ db_port }} -U ambari ambari -c \"ALTER SCHEMA ambari OWNER TO ambari;\""
+  become: no
+  args:
+    creates: /.ambari_db_provisioned
+
+- name: Alter Ambari role search path for db schemas
+  shell: "psql -h {{ database_master }} -p {{ db_port }} -U ambari ambari -c \"ALTER ROLE ambari SET search_path to 'ambari','public';\""
+  become: no
+  args:
+    creates: /.ambari_db_provisioned
+
+- name: Import Ambari SQL - Postgres
+  shell: "/usr/bin/psql -h {{ database_master }} -p {{ db_port }} -U ambari ambari < /var/lib/ambari-server/resources/Ambari-DDL-Postgres-CREATE.sql"
+  become: no
+  args:
+    creates: /.ambari_db_provisioned
+
+- name: Inform Ambari where the database is
+  shell: "ambari-server setup -s --database=postgres --databasehost={{ database_master }} --databaseport={{ db_port }} --databasename=ambari --databaseusername=ambari --databasepassword=\"{{ ambari_db_password }}\" --java-home={{ java_home }}"
+  args:
+    creates: /.ambari_db_provisioned
+
+- name: Setup Ambari JDBC
+  shell: "ambari-server setup -s --jdbc-db=postgres --jdbc-driver=/usr/share/java/postgresql-jdbc.jar"
+  args:
+    creates: /.ambari_db_provisioned
+
+- name: Touch file Ambari Provisioned
+  file:
+    path: "/.ambari_db_provisioned"
+    state: touch
+
+- name: Remove Provisioning PgPass for security
+  file:
+    path: "~/.pgpass"
+    state: absent
+  become: no

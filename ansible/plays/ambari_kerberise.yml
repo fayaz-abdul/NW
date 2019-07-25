@@ -1,0 +1,9 @@
+---
+- hosts: hadoop_ambari_nodes
+  gather_facts: yes
+  tasks: []
+
+- name: kerberise this cluster
+  hosts: hadoop_primary_ambari_server_nodes
+  roles:
+    - kerberisecluster

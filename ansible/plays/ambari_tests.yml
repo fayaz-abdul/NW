@@ -1,0 +1,9 @@
+---
+- hosts: hadoop_ambari_nodes
+  gather_facts: yes
+  tasks:
+    - include: tasks/set_ambari_facts.yml
+
+- hosts: hadoop_primary_ambari_server_nodes
+  roles:
+    - { role: ambari-tests }

@@ -1,0 +1,17 @@
+{
+  "Clusters": {
+    "desired_config": {
+      "type": "ranger-admin-site", "tag": "ranger-admin-site-post-config",
+      "properties" : {
+        "ranger.https.attrib.keystore.file" : "/etc/ranger/admin/conf/ranger-admin-keystore.jks",
+        "ranger.service.https.attrib.keystore.file" : "/etc/ranger/admin/conf/ranger-admin-keystore.jks",
+        "ranger.service.http.enabled" : "false",
+        "ranger.service.https.attrib.clientAuth" : "want",
+        "ranger.service.https.attrib.keystore.keyalias" : "rangeradmin",
+        "ranger.service.https.attrib.keystore.pass" : "xasecure",
+        "ranger.service.https.attrib.ssl.enabled" : "true",
+        "ranger.service.https.port" : "6182"
+      }
+    }
+  }
+}

@@ -1,0 +1,167 @@
+---
+- name: Install Ambari Server
+  yum:
+    name: ambari-server
+    state: latest
+
+- name: Install python-psycopg2
+  yum:
+    name: python-psycopg2
+    state: present
+
+- name: Install postgresql-jdbc
+  yum:
+    name: postgresql-jdbc
+    state: present
+
+- include: setup_postgres_ambari.yml
+
+- include: setup_postgres_hive.yml
+  when: "{{ hive_enable }}"
+
+- include: setup_postgres_ranger.yml
+  when: "{{ ranger_enable }}"
+
+- include: ambari_ssl.yml
+  when: "( {{ ambari_port }}  == 8443 or {{ ambari_port }} == 443 )"
+
+- name: Make sure ambari server is running
+  service:
+    name: ambari-server
+    state: started
+    enabled: yes
+
+- name: Waiting for ambari-server to start listening
+  wait_for:
+    host: "{{ ansible_nodename }}"
+    port: "{{ ambari_port }}"
+
+- name: Copy Ambari API service script
+  template:
+    dest: /etc/ambari-server/ambari-service.sh
+    src: ambari-service.sh.j2
+    mode: 0755
+
+- name: Upload HDP repo
+  template:
+    src: hdprepo.j2
+    dest: /tmp/hdprepo.json
+  when: "{{ hdp_custom_repo }}"
+
+- name: Slurp the hdp repo
+  slurp:
+    src: /tmp/hdprepo.json
+  register: hdprepo
+  when: "{{ hdp_custom_repo }}"
+
+- name: Submit custom HDP repo
+  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/{{ hdp_custom_repo_target }}"
+       method=PUT
+       force_basic_auth=yes
+       user="{{ ambari_username }}"
+       password="{{ ambari_password }}"
+       HEADER_X-Requested-By="{{ ambari_username }}"
+       body=" {{ hdprepo.content | b64decode }}"
+       body_format=raw
+       status_code=200,201,202
+  when: "{{ hdp_custom_repo }}"
+
+- name: Remove HDP repo
+  file:
+    path: /tmp/hdprepo.json
+    state: absent
+
+- name: Upload HDP utls repo
+  template:
+    src: hdputilsrepo.j2
+    dest: /tmp/hdputilsrepo.json
+  when: "{{ hdputils_custom_repo }}"
+
+- name: Slurp the hdp utils repo
+  slurp:
+    src: /tmp/hdputilsrepo.json
+  register: hdputilsrepo
+  when: "{{ hdputils_custom_repo }}"
+
+- name: Submit custom HDPUtils repo
+  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/{{ hdputils_custom_repo_target }}"
+       method=PUT
+       force_basic_auth=yes
+       user="{{ ambari_username }}"
+       password="{{ ambari_password }}"
+       HEADER_X-Requested-By="{{ ambari_username }}"
+       body=" {{ hdputilsrepo.content | b64decode }}"
+       body_format=raw
+       status_code=200,201,202
+  when: "{{ hdputils_custom_repo }}"
+
+- name: Remove HDPUtils repo
+  file:
+    path: /tmp/hdputilsrepo.json
+    state: absent
+
+- name: Upload alerts targets payload
+  template:
+    src: alerts.j2
+    dest: /tmp/alerts.json
+
+- name: Slurp the alerts payload
+  slurp:
+    src: /tmp/alerts.json
+  register: alert_targets
+
+- name: Check if alert_targets already exists
+  uri:
+    url: "{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/alert_targets"
+    method: GET
+    force_basic_auth: yes
+    user: "{{ ambari_username }}"
+    password: "{{ ambari_password }}"
+    HEADER_X-Requested-By: "{{ ambari_username }}"
+    status_code: 200,201,202,404
+    return_content: yes
+  register: current_alert_targets
+
+# Workaround for Bug: https://issues.apache.org/jira/browse/AMBARI-17093
+# 1. Stop ambari-server
+# 2. Remove property @xasecure.audit.destination.hdfs.dir" from ranger-kafka-audit.xml
+# 3. Start ambari-server
+# Note: Workaround to be removed once we have a hotfix from hortonworks
+- block:
+    - name: Stop ambari server
+      service: name=ambari-server state=stopped
+    - name: Wait for ambari-server to be stopped
+      pause:
+        seconds: "{{ service_delay }}"
+    - name: Replace audit config file
+      copy:
+        dest: "{{ kafka_audit_config_xml }}"
+        src: ranger-kafka-audit.xml
+        mode: 0755
+    - name: Start ambari server
+      service:
+        name: ambari-server
+        state: started
+        enabled: yes
+    - name: Wait for ambari-server to be started
+      wait_for:
+        host: "{{ ansible_nodename }}"
+        port: "{{ ambari_port }}"
+  when: "{{ ams_metrics_workaround }}"
+
+
+#- name: Register the alert targets with the ambari server
+#  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/alert_targets"
+#       method=PUT
+#       force_basic_auth=yes
+#       user="{{ ambari_username }}"
+#       password="{{ ambari_password }}"
+#       HEADER_X-Requested-By="{{ ambari_username }}"
+#       body="{{ alert_targets.content | b64decode }}"
+#       body_format=raw
+#       status_code=200,201,202
+#  when: '"AlertTarget" not in current_alert_targets.content'
+
+#- file:
+#    path: /tmp/alerts.json
+#    state: absent

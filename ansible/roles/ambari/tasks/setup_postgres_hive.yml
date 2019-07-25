@@ -1,0 +1,36 @@
+---
+- name: Ensure 'hive' has access to the hive db
+  postgresql_user:
+    name: hive
+    password: "{{ hive_db_password }}"
+    role_attr_flags: NOSUPERUSER,CREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+- name: Create Hive DB
+  postgresql_db:
+    name: hive
+    encoding: 'UTF-8'
+    owner: hive
+    login_host: "{{ database_master }}"
+    login_password: "{{ hive_db_password }}"
+    login_user: "hive"
+- name: Remove unnecessary Privileges from hive db user
+  postgresql_user:
+    name: hive
+    password: "{{ hive_db_password }}"
+    role_attr_flags: NOSUPERUSER,NOCREATEDB
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"
+    no_password_changes: yes
+- name: Grant privileges to hive for hive
+  postgresql_privs:
+    db: hive
+    privs: all
+    roles: hive
+    type: database
+    login_host: "{{ database_master }}"
+    login_password: "{{ root_db_password }}"
+    login_user: "{{ db_root_user }}"

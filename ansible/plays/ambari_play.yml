@@ -1,0 +1,32 @@
+---
+- hosts: hadoop_ambari_nodes
+  gather_facts: yes
+  tasks: []
+  handlers: []
+
+- hosts: hadoop_ambari_nodes
+  gather_facts: yes
+  tasks:
+    - include: tasks/set_ambari_facts.yml
+    - include: tasks/set_database_facts.yml
+
+- hosts: hadoop_ambari_nodes
+  roles:
+    - { role: base-role-fixes }
+
+- hosts: hadoop_primary_ambari_server_nodes
+  roles:
+    - { role: ambari,
+        ambari_server: true,
+        ambari_users: true }
+
+- hosts: hadoop_ambari_nodes
+  roles:
+    - { role: ambari,
+        ambari_ssl: false,
+        ambari_client: true }
+
+- hosts: hadoop_primary_ambari_server_nodes
+  roles:
+    - { role: ambari,
+        ambari_blueprint: true }

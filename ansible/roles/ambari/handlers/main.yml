@@ -1,0 +1,27 @@
+---
+- name: 'restart ambari_agent'
+  service:
+    name: ambari-agent
+    state: restarted
+- name: 'stop ambari_agent'
+  service:
+    name: ambari-agent
+    state: stopped
+- name: 'start ambari_agent'
+  service:
+    name: ambari-agent
+    state: started
+    enabled: yes
+- name: 'restart ambari_server'
+  service:
+    name: ambari-server
+    state: restarted
+- name: 'stop ambari_server'
+  service:
+    name: ambari-server
+    state: stopped
+- name: 'start ambari_server'
+  service:
+    name: ambari-server
+    state: started
+    enabled: yes

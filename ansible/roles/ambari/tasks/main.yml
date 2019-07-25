@@ -1,0 +1,39 @@
+---
+- yum_repository:
+    name: Ambari-Yum
+    description: Ambari-YUM
+    baseurl: "{{ ambari_repo_baseurl }}"
+    gpgkey: "{{ ambari_repo_gpgkey_url }}"
+    gpgcheck: "{{ ambari_repo_gpgcheck }}"
+    sslverify: "{{ ambari_repo_sslverify }}"
+    enabled: "{{ ambari_repo_enabled }}"
+
+- include: kernel.yml
+  when: "{{ ambari_client }} or {{ ambari_server }}"
+
+- include: server.yml
+  when: "{{ ambari_server }}"
+
+- include: client.yml
+  when: "{{ ambari_client }}"
+
+- include: ambari_ssl.yml
+  when: "{{ ambari_ssl }}"
+
+- include: ambari_ldap.yml
+  when: "{{ ambari_ldap }}"
+
+- include: blueprint.yml
+  when: "{{ ambari_blueprint }}"
+
+- include: ambari_users.yml
+  when: "{{ ambari_users }}"
+
+#- include: ranger_policies.yml
+#  when: "({{ ranger_enable }} and {{ ranger_policies_enable }})"
+
+#- include: ranger_ssl.yml
+#  when: "{{ ambari_ranger_ssl }}"
+
+#- include: update.yml
+#  when: "{{ ambari_updates }} and {{ ambari_server }}"

@@ -1,0 +1,48 @@
+#!/usr/bin/env bash
+
+SERVER=`/etc/ambari-agent/conf/hostname.sh`
+PORT=8443
+CLUSTERNAME="{{ cluster_name }}"
+SERVICE=$1
+
+api_login() {
+  unset USERNAME
+  unset PASSWORD
+  echo -n "Ambari Username:"
+  read USERNAME
+  prompt="Ambari Password:"
+  while IFS= read -p "$prompt" -r -s -n 1 char
+  do
+    if [[ $char == $'\0' ]]
+    then
+      break
+    fi
+    prompt='*'
+    PASSWORD+="$char"
+  done
+}
+
+ENDPOINT="https://${SERVER}:${PORT}/api/v1/clusters/${CLUSTERNAME}/services/${SERVICE}"
+
+case "$2" in
+  start)
+    echo "Starting $SERVICE"
+    api_login
+    curl -k -u $USERNAME:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Starting service via REST"}, "Body": {"ServiceInfo": {"state": "STARTED"}}}' $ENDPOINT
+    ;;
+  stop)
+    echo "Stopping $SERVICE"
+    api_login
+    curl -k -u $USERNAME:$PASSWORD -i -H 'X-Requested-By: ambari' -X PUT -d '{"RequestInfo": {"context" :"Starting service via REST"}, "Body": {"ServiceInfo": {"state": "INSTALLED"}}}' $ENDPOINT
+    ;;
+  check)
+    echo "Checking $SERVICE"
+    curl --silent -k -u ${USERNAME}:${PASSWORD} -X GET ${ENDPOINT}?fields=ServiceInfo | grep state
+    ;;
+  *)
+  echo 'Usage: ambari-service.sh [ZOOKEEPER|HDFS|YARN|MAPREDUCE2|HBASE|HIVE|SPARK|KAFKA] [start|stop|check]'
+  api_login
+  echo -e '\n\nAvailable services on:' ${SERVER}
+  curl --silent -k -u $USERNAME:$PASSWORD -X GET https://${SERVER}:${PORT}/api/v1/clusters/${CLUSTERNAME}/services | grep service_name| awk -F":" '{print $2}'
+  ;;
+esac

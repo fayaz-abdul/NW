@@ -1,0 +1,25 @@
+---
+- hosts: hadoop_ambari_nodes
+  gather_facts: yes
+  tasks: []
+
+- hosts: hadoop_primary_master_nodes
+  gather_facts: yes
+  tasks: []
+
+- hosts: [hadoop_ambari_nodes, database_nodes]
+  gather_facts: yes
+  tasks:
+   - include: tasks/set_ambari_facts.yml
+ 
+- hosts: hadoop_primary_ambari_server_nodes
+  roles:
+    - { role: ssl }
+    - { role: ambari,
+        ambari_ssl: true,
+        ambari_ldap: true}
+
+- hosts: hadoop_primary_ambari_server_nodes
+  roles:
+    - { role: ssl,
+        ambari_server: true }

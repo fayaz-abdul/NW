@@ -1,0 +1,7 @@
+---
+- name: Disable Runtime Transparent HugePages
+  shell: "echo never > /sys/kernel/mm/transparent_hugepage/enabled"
+  ignore_errors: yes
+- name: Disable Runtime Transparent HugePages Defrag
+  shell: "echo never > /sys/kernel/mm/transparent_hugepage/defrag"
+  ignore_errors: yes

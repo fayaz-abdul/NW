@@ -1,0 +1,94 @@
+---
+#- name: Check Ranger SSL Status
+# stat: path=/var/tmp/ranger-ssl-status
+# register: ranger_ssl_status
+
+- name: create self-signed SSL cert
+  command: keytool -genkey -dname "CN={{ansible_fqdn}}, OU=, O=Home Office, L=London, S=London, C=UK" -keyalg RSA -alias rangeradmin -keystore ranger-admin-keystore.jks -storepass xasecure -keypass xasecure -validity 3650 -keysize 2048
+  args:
+    chdir: /etc/ranger/admin/conf
+    creates: /etc/ranger/admin/conf/ranger-admin-keystore.jks
+  become: true
+
+- name: Fix ownership on ranger keystore
+  file: path=/etc/ranger/admin/conf/ranger-admin-keystore.jks owner=ranger group=ranger
+  
+- name: Stop Ranger Service
+  ambari_secure: action=9_stop_service cluster_name="{{ cluster_name }}" service="RANGER"
+
+#- name: Stop Ranger Service
+#  uri: 
+#       url: "{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_secure_port }}/api/v1/clusters/{{ blueprint }}/SERVICES/RANGER"
+#       method: PUT
+#       force_basic_auth: yes
+#       user: "{{ ambari_username }}"
+#       password: "{{ ambari_password }}"
+#       body: '{"ServiceInfo": {"state" : "INSTALLED"}}'
+#       HEADER_X-Requested-By: "{{ ambari_username }}"
+#       status_code: 200,201,202,404
+#       validate_certs: "{{ validate_certs }}"
+
+- name: Upload ranger_ssl
+  template:
+    src: ranger_ssl.j2
+    dest: /tmp/ranger-ssl.json
+
+- name: Slurp the ranger_ssl_config
+  slurp:
+    src: /tmp/ranger-ssl.json
+  register: ranger_ssl_config
+
+- name: PUT Ranger config
+  ambari_secure: action=10_post_service_config cluster_name="{{ cluster_name }}" config_path="/tmp/ranger-ssl.json" component="ranger-admin-site"
+
+#- name: Check if ranger_ssl has been applied
+#  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_secure_port }}/api/v1/clusters/{{ blueprint }}/configurations?tag=version1234588891" return_content=yes
+#       method=GET
+#       force_basic_auth=yes
+#       user="{{ ambari_username }}"
+#       password="{{ ambari_password }}"
+#       HEADER_X-Requested-By="{{ ambari_username }}"
+#       status_code=200,201,202,404
+#       validate_certs="{{ validate_certs }}"
+#  register: ranger_ssl_response
+
+#- debug: var=(ranger_ssl_done.content|from_json)
+# #when: "'\"items\": []' in ranger_ssl_done.content"
+# when: ranger_ssl_done.content|search('\"items\": []')
+
+#- name: Submit ranger-ssl
+#  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/clusters/{{ cluster_name }}"
+#       method=PUT
+#       force_basic_auth=yes
+#       user="{{ ambari_username }}"
+#       password="{{ ambari_password }}"
+#       HEADER_X-Requested-By="{{ ambari_username }}"
+#       body=" {{ ranger_ssl_config.content | b64decode }}"
+#       body_format=raw
+#       status_code=200,201,202
+#       validate_certs="{{ validate_certs }}"
+#  when: "'\"items\": []' in (ranger_ssl_done.content|from_json)"
+
+
+#  when: (ranger_ssl_done.content|from_json)['items']['version1234588891'] is defined
+#'"version1234588891" not in ranger_ssl_done.content'
+
+#- name: Start Ranger Service
+#  uri:
+#       url: "{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_secure_port }}/api/v1/clusters/{{ blueprint }}/SERVICES/RANGER"
+#       method: PUT
+#       force_basic_auth: yes
+#       user: "{{ ambari_username }}"
+#       password: "{{ ambari_password }}"
+#       body: '{"ServiceInfo": {"state" : "STARTED"}}'
+#       body_format: json
+#       HEADER_X-Requested-By: "{{ ambari_username }}"
+#       status_code: 200,201,202,404
+#       validate_certs: "{{ validate_certs }}"
+
+- name: Start Ranger Service
+  ambari_secure: action=11_start_service cluster_name="{{ cluster_name }}" service="RANGER"
+
+- file: 
+    path: /tmp/ranger-ssl.json
+    state: absent

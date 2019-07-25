@@ -1,0 +1,67 @@
+{
+  "blueprint": "{{ cluster_name }}",
+  "default_password": "{{hadoop_default_password}}",
+  "host_groups":
+  [
+    {
+    "name": "hadoop_primary_ambari_server_nodes",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_ambari_server_nodes'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }
+    {% if groups['hadoop_primary_security_nodes'] %},{
+    "name": "hadoop_primary_security_nodes",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_security_nodes'] %} { "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_secondary_security_nodes'] %},{
+    "name": "hadoop_secondary_security_nodes",
+    "hosts":
+      [ {% for node in groups['hadoop_secondary_security_nodes'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node1'] %},{
+    "name": "hadoop_primary_master_node1",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_master_node1'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node2'] %},{
+    "name": "hadoop_primary_master_node2",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_master_node2'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node3'] %},{
+    "name": "hadoop_primary_master_node3",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_master_node3'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node4'] %},{
+    "name": "hadoop_primary_master_node4",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_master_node4'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node5'] %},{
+    "name": "hadoop_primary_master_node5",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_master_node5'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_nodes'] %},{
+    "name":"hadoop_primary_master_nodes",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_master_nodes'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_secondary_master_nodes'] %},{
+    "name":"hadoop_secondary_master_nodes",
+    "hosts":
+      [ {% for node in groups['hadoop_secondary_master_nodes'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_data_nodes'] %},{
+    "name":"hadoop_primary_data_nodes",
+    "hosts":
+      [ {% for node in groups['hadoop_primary_data_nodes'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_secondary_data_nodes'] %},{
+    "name":"hadoop_secondary_data_nodes",
+    "hosts":
+      [ {% for node in groups['hadoop_secondary_data_nodes'] %}{ "fqdn": "{{ hostvars[node].ansible_hostname }}.{{ domain }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %} ]
+    }{% endif %}
+  ]
+}

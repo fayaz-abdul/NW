@@ -1,0 +1,244 @@
+---
+cluster_name: devops
+ambari_client: false
+ambari_server: false
+ambari_ssl: false
+ambari_ldap: false
+ambari_blueprint: false
+ambari_ranger_ssl: false
+ambari_secure_port: 8443
+ambari_updates: false
+ambari_users: false
+alerts_contact: devops@example.com
+hdp_custom_repo: false
+hdp_custom_repo_url: 'http://mirror.cdp.homeoffice.gov.uk/centos/6/hortonworks/x86_64/2.4.0.0'
+hdp_custom_repo_target: 'api/v1/stacks/HDP/versions/2.4/operating_systems/redhat6/repositories/HDP-2.4'
+hdp_custom_repo_url_verify: false
+hdputils_custom_repo: false
+hdputils_custom_repo_url: 'http://mirror.cdp.homeoffice.gov.uk/centos/6/hortonworks/utils/1.1.0.20'
+hdputils_custom_repo_target: 'api/v1/stacks/HDP/versions/2.4/operating_systems/redhat6/repositories/HDP-UTILS-1.1.0.20'
+hdputils_custom_repo_url_verify: false
+ambari_repo_baseurl: http://public-repo-1.hortonworks.com/ambari/centos6/2.x/updates/2.2.1.1
+ambari_repo_gpgkey_url: http://public-repo-1.hortonworks.com/ambari/centos6/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins
+ambari_repo_gpgcheck: yes
+ambari_repo_sslverify: True
+ambari_repo_enabled: yes
+ambari_db_password: ''
+ambari_port: 8080
+ambari_username: admin
+ambari_password: ''
+ambari_http: http
+validate_certs: no
+alert_grace_period: 10
+ignore_group_user_create: false
+ambari_agent_conn_max_retries: 20
+ambari_agent_sleep_between_retries: 10
+
+
+stack_name: HDP
+stack_version: 2.4
+hadoop_default_password: 'dAx9_M4JcW12iu'
+hadoop_network: 0.0.0.0/0
+wait: true
+wait_timeout: 1800 # 30 minutes
+service_delay: 20
+
+
+log_dir: /data/00/log
+tmp_dir: /data/00/tmp
+control_dir: /data/01
+
+# Hadoop env
+hadoop_enable: true
+hadoop_proxy_user_group: users
+namenode_heapsize: 1024m
+namenode_opt_maxnewsize: 128m
+namenode_opt_newsize: 128m
+
+# Core site
+hadoop_proxyuser_HTTP_groups: "*"
+hadoop_proxyuser_HTTP_hosts: "*"
+hadoop_proxyuser_falcon_groups: "*"
+hadoop_proxyuser_falcon_hosts: "*"
+hadoop_proxyuser_hbase_groups: "*"
+hadoop_proxyuser_hbase_hosts: "*"
+hadoop_proxyuser_hcat_groups: "*"
+hadoop_proxyuser_hcat_hosts: "*"
+hadoop_proxyuser_hive_groups: "*"
+hadoop_proxyuser_hive_hosts: "*"
+hadoop_proxyuser_knox_groups: "*"
+hadoop_proxyuser_knox_hosts: "*"
+hadoop_proxyuser_oozie_groups: "*"
+hadoop_proxyuser_oozie_hosts: "*"
+
+# HDFS site
+##  Do not use any special chars in the data dir path
+dfs_datanode_data_dir:
+  - /data/01/datanode
+dfs_blocksize: 67108864
+dfs_datanode_du_reserved: 3221225472
+## Match tollerance to at most the max number of disks in box
+dfs_datanode_failed_volumes_tolerated: 0
+dfs_datanode_max_transfer_threads: 16384
+dfs_permissions_enabled: true
+dfs_permissions_superusergroup: hdfs
+dfs_cluster_administrators: hdfs
+
+# Zepplin
+zeppelin_enable: false
+
+# Zookeeper
+zk_enable: true
+zk_autopurge_snapRetainCount: 3
+zk_autopurge_purgeInterval: 1
+zk_leader_port: 3118
+
+# Mapreduce
+mapreduce_enable: true
+mapreduce_map_output_compress: true
+mapreduce_job_reduce_slowstart_completedmaps: 0.7
+mapreduce_output_fileoutputformat_compress: true
+mapreduce_task_io_sort_mb: 286
+yarn_app_mapreduce_am_resource_mb: 10240
+mapreduce_map_java_opts: "-Xmx409m"
+mapreduce_reduce_java_opts: "-Xmx819m"
+yarn_app_mapreduce_am_command_opts: "-Xmx409m -Dhdp.version=${hdp.version}"
+mapreduce_map_memory_mb: 10240
+mapreduce_reduce_memory_mb: 10240
+mapreduce_jobtracker_staging_root_dir: /user
+
+# Yarn
+yarn_enable: true
+yarn_nodemanager_resource_memory_mb: 24576
+yarn_scheduler_maximum_allocation_mb: 10240
+yarn_scheduler_minimum_allocation_mb: 4096
+
+# Slider
+slider_enable: false
+
+# Pig
+pig_enable: true
+
+# Tez
+tez_enable: true
+tez_am_resource_memory_mb: 10240
+
+# Hive
+hive_enable: false
+hive_db_name: hive
+hive_db_schema: hive
+hive_db_username: hive
+hive_db_password: ''
+
+# HBase
+hbase_enable: false
+hbase_master_heapsize: 2048
+hbase_regionserver_heapsize: 2048
+hbase_regionserver_xmn_max: 512
+hbase_regionserver_xmn_ratio: 0.2
+
+# Ooize
+oozie_enable: false
+
+# Kafka
+kafka_enable: false
+## Replication Factor can not be greater than number of Kafka Brokers
+kafka_default_replication_factor: 2
+kafka_data_dir:
+  - /data/01/kafkadata
+  - /data/02/kafkadata
+
+# Storm
+storm_enable: false
+
+# Spark
+spark_enable: false
+
+# Ambari Monitor
+ams_enable: true
+ams_mode: true
+timeline_metrics_service_operation_mode: distributed
+metrics_collector_heapsize: 1024
+ams_hbase_master_heapsize: 2048
+ams_hbase_regionserver_heapsize: 2048
+ams_hbase_master_xmn_size: 256
+ams_hbase_regionserver_xmn_size: 400
+# Workaround: Bug: https://issues.apache.org/jira/browse/AMBARI-17093
+#  To be removed once we have a hotfix from hortonworks
+ams_metrics_workaround: false
+kafka_audit_config_xml: /var/lib/ambari-server/resources/stacks/HDP/2.3/services/KAFKA/configuration/ranger-kafka-audit.xml
+
+
+# Grafana
+grafana_enable: false
+
+# Knox
+knox_enable: false
+knox_master_secret: ''
+
+# Ranger
+ranger_enable: false
+ranger_policies_enable: false
+ranger_port: 6080
+ranger_http: http
+ranger_fqdn: localhost
+r_admin_username: admin
+r_admin_password: ''
+ranger_admin_username: amb_ranger_admin
+ranger_admin_password: ''
+ranger_policy_db_name: ranger_policy
+ranger_policy_db_user: ranger_policy
+ranger_policy_db_password: ''
+ranger_audit_db_name: ranger_audit
+ranger_audit_db_user: rangerlogger
+ranger_audit_db_password: ''
+ranger_hbase_plugin_enabled: false
+ranger_hdfs_plugin_enabled: false
+ranger_hive_plugin_enabled: false
+ranger_knox_plugin_enabled: false
+ranger_kafka_plugin_enabled: false
+ranger_yarn_plugin_enabled: false
+ranger_storm_plugin_enabled: false
+ranger_policy_username: ambari-qa
+
+# Ranger KMS
+rangerkms_enable: false
+KMS_MASTER_KEY_PASSWD: ''
+REPOSITORY_CONFIG_PASSWORD: ''
+kms_db_user: "rangerkms"
+kms_db_password: ''
+kms_db_name: "rangerkms"
+
+# Database
+db_type_lower: postgres
+db_type_upper: POSTGRES
+db_sql_connector_jar: "/usr/share/java/postgresql.jar"
+db_type: PostgreSQL
+db_jdbc_driver: org.postgresql.Driver
+db_jdbc_url: "jdbc:postgresql://"
+db_port: 5432
+db_root_user: postgres
+root_db_password: ''
+postgres_replication_password: ''
+
+#ldap
+ldap_host_port: 389
+ambari_ldap_basedn: "cn=root,dc=bx,dc=internal"
+ldap_bind_anonymously: true
+ambari_ldap_manager: "uid=hdfs,ou=people,dc=bx,dc=internal"
+ambari_ldap_password: ''
+ldap_user_searchbase: "ou=users,dc=bx,dc=internal"
+ranger_ldap_password: ''
+ldap_user_dnpattern: bx
+ldap_group_searchbase: "ou=groups,dc=bx,dc=internal"
+ldap_binddn: "cn=admin,dc=bx,dc=internal"
+ldap_url: "http://{{ ansible_nodename }}:389"
+
+# Kerberos
+ipa_admin: admin
+ipa_admin_password: ''
+domain: test.cdp.homeoffice.gov.uk
+realm: TEST.CDP.HOMEOFFICE.GOV.UK
+
+# api readonly users
+ambari_add_users: []

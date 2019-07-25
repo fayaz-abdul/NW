@@ -1,0 +1,41 @@
+{
+  "dbks-site" : {
+    "properties" : {
+      "ranger.ks.jpa.jdbc.url" : "{{ db_jdbc_url }}{{ database_master }}:{{ db_port}}/{{ kms_db_name }}",
+      "ranger.ks.jpa.jdbc.driver" : "{{ db_jdbc_driver }}",
+      "ranger.ks.jpa.jdbc.user" : "{{ kms_db_user }}",
+      "ranger.ks.jpa.jdbc.password" : "{{ kms_db_password }}"
+    }
+  }
+},
+{
+  "kms-properties" : {
+    "properties" : {
+      "KMS_MASTER_KEY_PASSWD" : "{{ KMS_MASTER_KEY_PASSWD }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ REPOSITORY_CONFIG_PASSWORD }}",
+      "db_root_user" : "{{ db_root_user }}",
+      "db_root_password": "{{ root_db_password }}",
+      "DB_FLAVOR" : "{{ db_type_upper }}",
+      "db_name" : "{{ kms_db_name }}",
+      "db_user" : "{{ kms_db_user }}",
+      "db_password": "{{ kms_db_password }}",
+      "SQL_CONNECTOR_JAR": "{{ db_sql_connector_jar }}",
+      "db_host" : "{{ database_master }}"
+    }
+  }
+ },
+ {
+  "kms-log4j" : {
+    "properties" : {
+      "content" : "\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\");\n# you may not use this file except in compliance with the License.\n# You may obtain a copy of the License at\n#\n#    http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software\n# distributed under the License is distributed on an \"AS IS\" BASIS,\n# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n# See the License for the specific language governing permissions and\n# limitations under the License. See accompanying LICENSE file.\n#\n\n# If the Java System property 'kms.log.dir' is not defined at KMS start up time\n# Setup sets its value to '${kms.home}/logs'\n\nlog4j.appender.kms=org.apache.log4j.DailyRollingFileAppender\nlog4j.appender.kms.DatePattern='.'yyyy-MM-dd\nlog4j.appender.kms.File=${kms.log.dir}/kms.log\nlog4j.appender.kms.Append=true\nlog4j.appender.kms.layout=org.apache.log4j.PatternLayout\nlog4j.appender.kms.layout.ConversionPattern=%d{ISO8601} %-5p %c{1} - %m%n\n\nlog4j.appender.kms-audit=org.apache.log4j.DailyRollingFileAppender\nlog4j.appender.kms-audit.DatePattern='.'yyyy-MM-dd\nlog4j.appender.kms-audit.File=${kms.log.dir}/kms-audit.log\nlog4j.appender.kms-audit.Append=true\nlog4j.appender.kms-audit.layout=org.apache.log4j.PatternLayout\nlog4j.appender.kms-audit.layout.ConversionPattern=%d{ISO8601} %m%n\n\nlog4j.logger.kms-audit=INFO, kms-audit\nlog4j.additivity.kms-audit=false\n\nlog4j.rootLogger=ALL, kms\nlog4j.logger.org.apache.hadoop.conf=ERROR\nlog4j.logger.org.apache.hadoop=INFO\nlog4j.logger.com.sun.jersey.server.wadl.generators.WadlGeneratorJAXBGrammarGenerator=OFF"
+    }
+  }
+ },
+ {
+  "kms-env" : {
+    "properties" : {
+      "kms_log_dir" : "{{ log_dir }}/ranger/kms",
+      "create_db_user" : "true"
+    }
+  }
+}

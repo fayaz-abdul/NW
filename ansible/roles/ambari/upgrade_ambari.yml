@@ -1,0 +1,12 @@
+---
+- hosts: ambari_nodes
+  tasks:
+    - include: tasks/upgrade_ambari_agents.yml
+
+- hosts: hadoop_primary_datanodes
+  tasks:
+    - include: tasks/upgrade_ambari_collector.yml
+
+- hosts: ambari_master
+  tasks:
+    - include: tasks/upgrade_ambari_server.yml

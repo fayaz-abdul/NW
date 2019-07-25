@@ -1,0 +1,28 @@
+{
+  "hbase-env": {
+    {% include "hbase/hbase-env.j2" %}
+  }
+},
+{
+  "hbase-site": {
+    "properties": {
+      "hbase.tmp.dir": "{{ tmp_dir }}/hbase",
+      {% if ranger_hbase_plugin_enabled %}"hbase.coprocessor.master.classes": "com.xasecure.authorization.hbase.XaSecureAuthorizationCoprocessor,org.apache.ranger.authorization.hbase.RangerAuthorizationCoprocessor",{% endif %}
+      {% if ranger_hbase_plugin_enabled %}"com.xasecure.authorization.hbase.XaSecureAuthorizationCoprocessor,org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint,org.apache.ranger.authorization.hbase.RangerAuthorizationCoprocessor",{% endif %}
+      "hbase.regionserver.wal.codec" : "org.apache.hadoop.hbase.regionserver.wal.WALCellCodec",
+      {% if ranger_hbase_plugin_enabled %}"org.apache.ranger.authorization.hbase.RangerAuthorizationCoprocessor",{% endif %}
+      "hbase.security.authorization": "true",
+      "hbase.rpc.protection": "authentication",
+      "dfs.domain.socket.path": "{{ control_dir }}/dn_socket",
+      "hbase.rootdir": "hdfs://{{ cluster_name }}/apps/hbase/data",
+      "hbase.regionserver.storefile.refresh.period": "20",
+      "phoenix_sql_enabled": "true",
+      "hbase.zookeeper.quorum": "{% for item in groups['zookeeper_quorum_nodes'] %}{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
+    }
+  }
+},
+{
+  "hbase-log4j": {
+    {% include "hbase/hbase-log4j.j2" %}
+  }
+}

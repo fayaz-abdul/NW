@@ -1,0 +1,9 @@
+"properties" : {
+"content" : {% raw %}"\n #!/bin/bash\n \n # Set KAFKA specific environment variables here.\n \n # The java implementation to use.\n \n #Enable JMX if running as kafka\n if [[ $USER == \"kafka\" ]]\n then\n export JMX_PORT=9999\n export KAFKA_JMX_OPTS=\"-Dcom.sun.management.jmxremote -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.rmi.port=${JMX_PORT}\"\n fi\n \n export JAVA_HOME={{java64_home}}\n export PATH=$PATH:$JAVA_HOME/bin\n export PID_DIR={{kafka_pid_dir}}\n export LOG_DIR={{kafka_log_dir}}\n export KAFKA_KERBEROS_PARAMS={{kafka_kerberos_params}}\n export SERVER_GC_OPTS=\"-verbose:gc -Xloggc:{{kafka_log_dir}}/gc.log -XX:+PrintGCCause -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=10M -XX:+PrintGCDetails -XX:+PrintGCDateStamps\"\n export KAFKA_GC_LOG_OPTS=\"$SERVER_GC_OPTS\"\n # Add kafka sink to classpath and related depenencies\n if [ -e \"/usr/lib/ambari-metrics-kafka-sink/ambari-metrics-kafka-sink.jar\" ]; then\n export CLASSPATH=$CLASSPATH:/usr/lib/ambari-metrics-kafka-sink/ambari-metrics-kafka-sink.jar\n export CLASSPATH=$CLASSPATH:/usr/lib/ambari-metrics-kafka-sink/lib/*\n fi\n if [ -f /etc/kafka/conf/kafka-ranger-env.sh ]; then\n . /etc/kafka/conf/kafka-ranger-env.sh\n fi"{% endraw %},
+"is_supported_kafka_ranger" : "true",
+"kafka_log_dir" : "{{ log_dir }}/kafka",
+"kafka_pid_dir" : "/var/run/kafka",
+"kafka_user" : "kafka",
+"kafka_user_nofile_limit" : "128000",
+"kafka_user_nproc_limit" : "65536"
+}

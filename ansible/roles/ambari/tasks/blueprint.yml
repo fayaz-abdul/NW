@@ -1,0 +1,121 @@
+#pre-process the knox topology file
+- name: process knox topology
+  template:
+    src: knox-topology.j2
+    dest: /tmp/knox-topology.j2
+  when: "{{ knox_enable }}"
+
+- name: slurp the knox topology
+  slurp:
+    src: /tmp/knox-topology.j2
+  register: knox_topology
+  when: "{{ knox_enable }}"
+
+#Register the blueprint
+- name: Upload blueprint for ambari
+  template:
+    src: blueprint.j2
+    dest: /tmp/blueprint.json
+
+- name: slurp the blueprint
+  slurp:
+    src: /tmp/blueprint.json
+  register: cluster_blueprint
+
+- name: Make sure the blueprint doesnt already exist
+  uri:
+    url: "{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/blueprints/{{ cluster_name }}"
+    method: GET
+    force_basic_auth: yes
+    user: "{{ ambari_username }}"
+    password: "{{ ambari_password }}"
+    HEADER_X-Requested-By: "{{ ambari_username }}"
+    status_code: 200,201,202,404
+    validate_certs: "{{ validate_certs }}"
+  ignore_errors: true
+  register: current_blueprint
+
+- name: Register the blueprint with the ambari server
+  uri:
+    url: "{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/blueprints/{{ cluster_name }}"
+    method: POST
+    force_basic_auth: yes
+    user: "{{ ambari_username }}"
+    password: "{{ ambari_password }}"
+    HEADER_X-Requested-By: "{{ ambari_username }}"
+    body: " {{ cluster_blueprint.content | b64decode }}"
+    validate_certs: "{{ validate_certs }}"
+    status_code: 200,201,202,404
+  when: current_blueprint.status==404
+
+#- file:
+#    path: /tmp/blueprint.json
+#    state: absent
+
+- name: Upload the cluster creation template
+  template:
+    src: hostmapping.j2
+    dest: /tmp/hostmapping.json
+
+- name: slurp the cluster creation template
+  slurp:
+    src: /tmp/hostmapping.json
+  register: cluster_template
+
+- name: Check if the cluster {{ cluster_name }} already exists
+  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/clusters/{{ cluster_name }}"
+       method=GET
+       force_basic_auth=yes
+       user="{{ ambari_username }}"
+       password="{{ ambari_password }}"
+       HEADER_X-Requested-By="{{ ambari_username }}"
+       status_code=200,201,202,404
+       validate_certs="{{ validate_certs }}"
+  register: current_cluster
+
+- name: Create the cluster instance
+  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/clusters/{{ cluster_name }}"
+       method=POST
+       force_basic_auth=yes
+       user="{{ ambari_username }}"
+       password="{{ ambari_password }}"
+       HEADER_X-Requested-By="{{ ambari_username }}"
+       body=" {{ cluster_template.content | b64decode }}"
+       body_format=raw
+       status_code=200,201,202
+       validate_certs="{{ validate_certs }}"
+  when: current_cluster.status==404
+
+#- file:
+#    path: /tmp/hostmapping.json
+#    state: absent
+
+- pause:
+    seconds: 30
+  when: current_cluster.status==404
+
+- name: Wait for cluster to be build
+  uri: url="{{ ambari_http }}://{{ ansible_fqdn }}:{{ ambari_port }}/api/v1/clusters/{{ cluster_name }}/requests/1"
+       method=GET
+       force_basic_auth=yes
+       user="{{ ambari_username }}"
+       password="{{ ambari_password }}"
+       HEADER_Content-Type="application/json"
+       HEADER_X-Requested-By=" ambari_username "
+       status_code=200,201,202
+       return_content=yes
+       validate_certs="{{ validate_certs }}"
+  register: cluster_create_task
+  until: ((cluster_create_task.content|from_json).Requests.request_status == 'COMPLETED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')
+  retries: "{{ wait_timeout // 10 }}"
+  delay: 20
+  when: wait and current_cluster.status==404
+
+- name: Fail if the cluster create task is in an error state
+  fail: msg="Failed to build the {{ cluster_name }} cluster. Status is {{ (cluster_create_task.content|from_json).Requests.request_status }}"
+  when: wait and current_cluster.status==404 and ((cluster_create_task.content|from_json).Requests.request_status == 'FAILED' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'TIMEDOUT' or
+         (cluster_create_task.content|from_json).Requests.request_status == 'ABORTED')

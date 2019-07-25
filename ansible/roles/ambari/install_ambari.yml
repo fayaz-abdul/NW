@@ -1,0 +1,18 @@
+---
+- include: set_facts.yml
+- hosts: ambari_nodes
+  tasks:
+    - name: Include Task DB Clients Setup
+      include: tasks/install_db_clients.yml
+    - name: Include Task Install PreReqs
+      include: tasks/install_prereq.yml
+    - name: Include Task Ambari Setup Repo
+      include: tasks/client.yml
+    - name: Install Java
+      yum:
+        name: "{{ item }}"
+        state: latest
+      with_items:
+        - java-1.8.0-openjdk-devel
+        - java-1.8.0-openjdk-headless
+        - java-1.8.0-openjdk

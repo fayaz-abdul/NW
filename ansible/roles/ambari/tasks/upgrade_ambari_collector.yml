@@ -1,0 +1,4 @@
+---
+- name: Upgrade Ambari Metrics Collector
+  yum:
+    name: ambari-metrics-collector

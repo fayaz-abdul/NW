@@ -1,0 +1,62 @@
+[
+  {
+    "dnsSearchDomains": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/aws/ecs/rstudio/container",
+        "awslogs-region": "eu-west-1",
+        "awslogs-stream-prefix": "instance"
+      }
+    },
+    "entryPoint": [],
+    "portMappings": [
+      {
+        "hostPort": 8787,
+        "protocol": "tcp",
+        "containerPort": 8787
+      }
+    ],
+    "command": [],
+    "linuxParameters": null,
+    "cpu": 1024,
+    "environment": [
+      {
+        "name": "PASSWORD",
+        "value": "no_cats_here!"
+      }
+    ],
+    "ulimits": [],
+    "dnsServers": [
+      "172.22.73.10",
+      "172.22.73.40"
+    ],
+    "mountPoints": [
+      {
+        "readOnly": false,
+        "containerPath": "/home/rstudio",
+        "sourceVolume": "rstudio-home"
+      }
+    ],
+    "workingDirectory": null,
+    "dockerSecurityOptions": [],
+    "memory": 4096,
+    "memoryReservation": null,
+    "volumesFrom": [],
+    "image": "387984460553.dkr.ecr.eu-west-1.amazonaws.com/test_crimson_bi_data_analytics_ecr/r_studio:latest",
+    "disableNetworking": null,
+    "interactive": null,
+    "healthCheck": null,
+    "essential": true,
+    "links": [],
+    "hostname": null,
+    "extraHosts": [],
+    "pseudoTerminal": null,
+    "user": null,
+    "readonlyRootFilesystem": null,
+    "dockerLabels": {},
+    "systemControls": null,
+    "privileged": null,
+    "name": "test_crimson_bi_data_compute_rstudio"
+  }
+]

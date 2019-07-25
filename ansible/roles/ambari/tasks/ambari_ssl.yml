@@ -1,0 +1,105 @@
+---
+- name: Check Ambari SSL Status
+  stat: path=/var/tmp/ambari-ssl-status
+  register: ambari_ssl_status
+
+- name: Check Ambari Key Store Status
+  stat: path=/var/tmp/ambari-keystore-status
+  register: ambari_keystore_status
+
+- name: Check Ambari Trust Store Status
+  stat: path=/var/lib/ambari-server/truststore.jks
+  register: ambari_truststore_status
+
+- name: Stop Ambari Server
+  service: name=ambari-server state=stopped
+
+- name: Enable Ambari API SSL
+  lineinfile: dest=/etc/ambari-server/conf/ambari.properties regexp='^api.ssl' line='api.ssl=true' owner=root group=root mode=0644
+
+- name: Enable Ambari Two Way SSL
+  lineinfile: dest=/etc/ambari-server/conf/ambari.properties regexp='^security.server.two_way_ssl' line='security.server.two_way_ssl=true' owner=root group=root mode=0644
+
+- name: Configure Ambari Certificate Name
+  lineinfile: dest=/etc/ambari-server/conf/ambari.properties regexp='^client.api.ssl.cert_name' line='client.api.ssl.cert_name=https.crt' owner=root group=root mode=0644
+
+- name: Configure Ambari Key Name
+  lineinfile: dest=/etc/ambari-server/conf/ambari.properties regexp='^client.api.ssl.key_name' line='client.api.ssl.key_name=https.key' owner=root group=root mode=0644
+
+- name: Configure Ambari SSL Port 
+  lineinfile: dest=/etc/ambari-server/conf/ambari.properties regexp='^client.api.ssl.port' line='client.api.ssl.port=8443' owner=root group=root mode=0644
+
+- name: Configure Ambari trustStore type
+  lineinfile: dest=/etc/ambari-server/conf/ambari.properties regexp='^ssl.trustStore.type' line='ssl.trustStore.type=jks' owner=root group=root mode=0644
+
+- name: Configure Ambari trustStore Path
+  lineinfile: dest=/etc/ambari-server/conf/ambari.properties regexp='^ssl.trustStore.path' line='ssl.trustStore.path=/var/lib/ambari-server/truststore.jks' owner=root group=root mode=0644
+
+- name: Configure Ambari trustStore Password
+  lineinfile: 
+    dest: /etc/ambari-server/conf/ambari.properties 
+    regexp: 'ssl.trustStore.password' 
+    line: "ssl.trustStore.password={{ ambari_trustStore_password }}"
+    owner: root
+    group: root
+    mode: 0644
+  when: ambari_ssl_status.stat.exists == False
+
+- name: Set Ambari SSL Status Flag
+  file: dest=/var/tmp/ambari-ssl-status state=touch 
+  when: ambari_ssl_status.stat.exists == False
+
+- name: Set tls passphrase
+  template: src=tls-passphrase.j2 dest=/var/lib/ambari-server/keys/tls.pass.txt owner=root group=root mode=0600
+  when: ambari_keystore_status.stat.exists == False
+
+- name: Set PKCS12 passphrase
+  template: src=pkcs12-passphrase.j2 dest=/var/lib/ambari-server/keys/https.pass.txt owner=root group=root mode=0600
+  when: ambari_keystore_status.stat.exists == False
+
+- name: Check Cert Exists
+  stat: path=/etc/pki/tls/certs/{{ansible_fqdn}}.crt
+  register: tls_cert
+
+- name: set passphrase
+  copy: 
+    content: "{{ ssl_key_passphrase }}"
+    dest: /etc/pki/tls/private/passphrase.txt
+    owner: root
+    group: root
+    mode: 0600
+  when: tls_cert.stat.exists == False
+  register: tls_passphrase
+
+- name: create private key
+  command: openssl genrsa -aes256 -passout file:/etc/pki/tls/private/passphrase.txt -out /etc/pki/tls/private/{{ansible_fqdn}}.key 2048 creates=/etc/pki/tls/private/{{ansible_fqdn}}.key
+  when: tls_passphrase.changed
+  register: tls_private_key
+
+- name: create self-signed SSL cert
+  command: openssl req -new -nodes -x509 -subj "/C=UK/ST=London/L=London/O=Home Office/CN={{ansible_fqdn}}" -days 3650 -passin file:/etc/pki/tls/private/passphrase.txt -key /etc/pki/tls/private/{{ansible_fqdn}}.key -out /etc/pki/tls/certs/{{ansible_fqdn}}.crt -extensions v3_ca creates=/etc/pki/tls/certs/{{ansible_fqdn}}.crt
+  when: tls_private_key.changed
+
+- name: Remove passphrase for security
+  file:
+    path: "/etc/pki/tls/private/passphrase.txt"
+    state: absent
+
+- name: Create PKCS12 store
+  command: openssl pkcs12 -export -in /etc/pki/tls/certs/{{ansible_fqdn}}.crt -inkey /etc/pki/tls/private/{{ansible_fqdn}}.key -certfile /etc/pki/tls/certs/{{ansible_fqdn}}.crt -out /var/lib/ambari-server/keys/https.keystore.p12 -password file:/var/lib/ambari-server/keys/https.pass.txt -passin file:/var/lib/ambari-server/keys/tls.pass.txt
+  when: ambari_keystore_status.stat.exists == False
+  
+- name: Set Ambari Key Store Status Flag
+  file: 
+    dest: /var/tmp/ambari-keystore-status
+    state: touch
+  when: ambari_keystore_status.stat.exists == False
+
+- name: Create trustStore
+  command: keytool -importcert -keystore /var/lib/ambari-server/truststore.jks -alias {{ ansible_fqdn }} -storepass {{ ambari_trustStore_password }} -file /etc/pki/tls/certs/{{ ansible_fqdn }}.crt -noprompt
+  when: ambari_truststore_status.stat.exists == False
+
+- name: Remove tls passphrase for security
+  file:
+    path: /var/lib/ambari-server/keys/tls.pass.txt
+    state: absent

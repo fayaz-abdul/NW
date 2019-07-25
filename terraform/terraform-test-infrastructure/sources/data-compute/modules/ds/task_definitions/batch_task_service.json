@@ -1,0 +1,74 @@
+[
+  {
+    "dnsSearchDomains": [],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/aws/ecs/pax-forecast",
+        "awslogs-region": "eu-west-1",
+        "awslogs-stream-prefix": "tidyverse"
+      }
+    },
+    "entryPoint": [
+      "/usr/local/bin/Rscript"
+    ],
+    "portMappings": [],
+    "command": [
+      "--verbose",
+      "-e",
+      "library(tidyverse)"
+    ],
+    "linuxParameters": null,
+    "cpu": 2048,
+    "environment": [
+      {
+        "name": "AWS_S3_BUCKET_ID",
+        "value": "dev-mag-bi-receive-eu-west-1-s3bucket"
+      },
+      {
+        "name": "AWS_S3_PREFIX",
+        "value": "ds/pax-forecast"
+      },
+      {
+        "name": "ELASTIC_SEARCH_HOST",
+        "value": "tbc"
+      },
+      {
+        "name": "ELASTIC_SEARCH_PASSWORD",
+        "value": "tbc"
+      },
+      {
+        "name": "ELASTIC_SEARCH_USERNAME",
+        "value": "tbc"
+      },
+      {
+        "name": "ENVIRONMENT",
+        "value": "dev"
+      }
+    ],
+    "ulimits": [],
+    "dnsServers": [],
+    "mountPoints": [],
+    "workingDirectory": null,
+    "secrets": null,
+    "dockerSecurityOptions": [],
+    "memory": 4096,
+    "memoryReservation": null,
+    "volumesFrom": [],
+    "image": "282376733589.dkr.ecr.eu-west-1.amazonaws.com/crimsonmacaw/r-mag-stn:rstan",
+    "disableNetworking": null,
+    "interactive": null,
+    "healthCheck": null,
+    "essential": true,
+    "links": [],
+    "hostname": null,
+    "extraHosts": [],
+    "pseudoTerminal": null,
+    "user": null,
+    "readonlyRootFilesystem": null,
+    "dockerLabels": {},
+    "systemControls": null,
+    "privileged": null,
+    "name": "dev_mag_bi_data_compute_pax_forecast_batch_tidyverse_ecstask"
+  }
+]

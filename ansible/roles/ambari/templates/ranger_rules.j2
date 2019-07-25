@@ -1,0 +1,174 @@
+{% if ranger_knox_plugin_enabled %}
+{
+  "id": 1,
+  "repositoryName": "{{ cluster_name }}_knox",
+  "repositoryType": "knox",
+  "resourceName": "/*/*",
+  "description": "Ranger Policy for Knox Access",
+  "isEnabled": true,
+  "isAuditEnabled": true,
+  "isRecursive": false,
+  "topologies": "*",
+  "services": "*",
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_knox_rule_id_1",
+  "permMapList": [
+    { "permList": "Allow" },
+    { "permList": "Admin" },
+    { "userList": "{{ ranger_admin_username }}" }
+  ]
+}
+{% endif %}
+{
+  "id": 2,
+  "repositoryName": "{{ cluster_name }}_hadoop",
+  "repositoryType": "hdfs",
+  "resourceName": "/*",
+  "description": "Ranger Policy for HDFS Access",
+  "isEnabled": true,
+  "isAuditEnabled": true,
+  "isRecursive": true,
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_hadoop_rule_id_2",
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Execute" },
+    { "permList": "Admin" },
+    { "userList": "{{ ranger_admin_username }}" }
+  ],
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Execute" },
+    { "permList": "Admin" },
+    { "groupList": "admins" }
+  ]
+}
+{% if ranger_hbase_plugin_enabled %}
+{
+  "id": 3,
+  "repositoryName": "{{ cluster_name }}_hbase",
+  "repositoryType": "hbase",
+  "resourceName": "/*/*/*",
+  "description": "Ranger Policy for HBase Access",
+  "isEnabled": true,
+  "isAuditEnabled": true,
+  "isRecursive": false,
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_hbase_rule_id_1",
+  "columnFamilies": "*",
+  "columnType": "Inclusion",
+  "columns": "*",
+  "tableType": "Inclusion",
+  "tables": "*",
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Create" },
+    { "permList": "Admin" },
+    { "userList": "{{ ranger_admin_username }}" }
+  ]
+}
+{
+  "id": 4,
+  "repositoryName": "{{ cluster_name }}_hbase",
+  "repositoryType": "hbase",
+  "resourceName": "/ambarismoketest/*/*",
+  "description": "HBase Smoke Tests",
+  "isEnabled": true,
+  "isAuditEnabled": true,
+  "isRecursive": false,
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_hbase_rule_id_4",
+  "columnFamilies": "*",
+  "columnType": "Inclusion",
+  "columns": "*",
+  "tableType": "Inclusion",
+  "tables": "ambarismoketest",
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Create" },
+    { "userList": "ambari-qa"
+  ]
+}
+{% endif %}
+{
+  "id": 5,
+  "repositoryName": "{{ cluster_name }}_hadoop",
+  "repositoryType": "hdfs",
+  "resourceName": "/ranger",
+  "description": "Ranger Audit Policy for HDFS Access",
+  "isEnabled": true,
+  "isAuditEnabled": false,
+  "isRecursive": true,
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_hadoop_rule_id_5",
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Execute" },
+    { "userList": "hdfs" },
+    { "userList": "yarn" },
+    { "userList": "hbase" },
+    { "userList": "hive" },
+    { "userList": "knox" },
+    { "userList": "kafka" },
+    { "userList": "storm" }
+  ]
+}
+{
+  "id": 6,
+  "repositoryName": "{{ cluster_name }}_hadoop",
+  "repositoryType": "hdfs",
+  "resourceName": "/apps/hbase/data,/apps/hbase/staging",
+  "description": "HDFS Data Maintenace",
+  "isEnabled": true,
+  "isAuditEnabled": true,
+  "isRecursive": true,
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_hadoop_rule_id_6",
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Execute" },
+    { "userList": "hbase" }
+  ]
+}
+{
+  "id": 7,
+  "repositoryName": "{{ cluster_name }}_hadoop",
+  "repositoryType": "hdfs",
+  "resourceName": "/mr-history/tmp,/mr-history/done,/app-logs",
+  "description": "HDFS Map Reduce History",
+  "isEnabled": true,
+  "isAuditEnabled": true,
+  "isRecursive": true,
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_hadoop_rule_id_7",
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Execute" },
+    { "userList": "mapred" }
+  ]
+}
+{
+  "id": 8,
+  "repositoryName": "{{ cluster_name }}_hadoop",
+  "repositoryType": "hdfs",
+  "resourceName": "/ats/active",
+  "description": "HDFS Application Timeline Service",
+  "isEnabled": true,
+  "isAuditEnabled": true,
+  "isRecursive": true,
+  "replacePerm": false,
+  "policyName": "{{ cluster_name }}_hadoop_rule_id_8",
+  "permMapList": [
+    { "permList": "Read" },
+    { "permList": "Write" },
+    { "permList": "Execute" },
+    { "userList": "yarn" }
+  ]
+}

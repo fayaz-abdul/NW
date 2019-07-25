@@ -1,0 +1,267 @@
+{
+  "ranger-env": {
+    "properties":{
+      "ranger_group": "ranger",
+      "ranger_usersync_log_dir": "{{ log_dir }}/ranger/usersync",
+      "admin_username": "{{ r_admin_username }}",
+      "admin_password": "{{ r_admin_password }}",
+      "ranger_user": "ranger",
+      "create_db_user": "false",
+      "ranger_admin_password": "{{ ranger_admin_password }}",
+      "ranger_admin_username": "{{ ranger_admin_username }}",
+      "ranger_admin_log_dir": "{{ log_dir }}/ranger/admin",
+      "ranger_privelege_user_jdbc_url": "{{ db_jdbc_url }}{{ database_master }}:{{ db_port}}/{{ db_root_user }}",
+      "bind_anonymous": "{{ ldap_bind_anonymously }}",
+      {% if ranger_hbase_plugin_enabled %}"ranger-hbase-plugin-enabled": "Yes",{% endif %}
+      {% if ranger_hdfs_plugin_enabled %}"ranger-hdfs-plugin-enabled": "Yes",{% endif %}
+      {% if ranger_hive_plugin_enabled %}"ranger-hive-plugin-enabled": "Yes",{% endif %}
+      {% if ranger_knox_plugin_enabled  %}"ranger-knox-plugin-enabled": "Yes",{% endif %}
+      {% if ranger_kafka_plugin_enabled %}"ranger-kafka-plugin-enabled": "Yes",{% endif %}
+      {% if ranger_yarn_plugin_enabled  %}"ranger-yarn-plugin-enabled": "Yes",{% endif %}
+      {% if ranger_storm_plugin_enabled %}"ranger-storm-plugin-enabled": "Yes", {% endif %}
+      "is_solrCloud_enabled": "false",
+      "xml_configurations_supported": "true",
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false"
+    }
+  }
+},
+{
+  "ranger-admin-site": {
+    "properties": {
+      "ranger.audit.source.type": "db",
+      "ranger.authentication.method": "UNIX",
+      "ranger.unixauth.remote.login.enabled": "true",
+      "ranger.unixauth.service.hostname": "localhost",
+      "ranger.unixauth.service.port": "5151",
+      "ranger.jpa.jdbc.url": "{{ db_jdbc_url }}{{ database_master }}:{{ db_port}}/{{ ranger_policy_db_name }}",
+      "ranger.jpa.jdbc.driver": "{{ db_jdbc_driver }}",
+      "ranger.audit.solr.urls": "{% for host in groups['hadoop_data_nodes'] %}http://{{ host }}:6083{% if not loop.last %},{% endif %}{% endfor %}/ranger_audits",
+      "ranger.audit.solr.zookeepers": "{% for item in groups['zookeeper_quorum_nodes'] %}{{ item }}{% if not loop.last %},{% endif %}{% endfor %}"
+    }
+  }
+},
+{
+	"ranger-ugsync-site": {
+		"properties": {
+
+		}
+	}
+},
+{
+  "admin-properties": {
+    "properties": {
+      "audit_db_user": "{{ ranger_audit_db_user }}",
+      "db_root_user": "{{ db_root_user }}",
+      "db_root_password": "{{ root_db_password }}",
+      "DB_FLAVOR": "{{ db_type_upper }}",
+      "db_name": "{{ ranger_policy_db_name }}",
+      "policymgr_external_url": "http://{{ ranger_master }}:6080",
+      "db_user": "{{ ranger_policy_db_user }}",
+      "SQL_CONNECTOR_JAR": "{{ db_sql_connector_jar }}",
+      "db_host": "{{ database_master }}",
+      "db_password": "{{ ranger_policy_db_password}}",
+      "audit_db_name": "{{ ranger_audit_db_name }}",
+      "audit_db_password": "{{ ranger_audit_db_password }}"
+    }
+  }
+},
+{
+  "ranger-kms-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/kms/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.hdfs" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/kms/solr/spool",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/kms/db/spool"
+    }
+  }
+},
+{% if ranger_hbase_plugin_enabled %}
+{
+  "ranger-hbase-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/hbase/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/hbase/solr/spool",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/hbase/db/spool"
+    }
+  }
+},
+{ "ranger-hbase-plugin-properties": {
+    "properties": {
+      "REPOSITORY_CONFIG_USERNAME": "{{ ranger_admin_username }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ ranger_admin_password }}",
+      "ranger-hbase-plugin-enabled": "Yes",
+      "policy_user": "{{ ranger_policy_username }}"
+    }
+  }
+},
+{% endif %}
+{% if ranger_hdfs_plugin_enabled %}
+{
+  "ranger-hdfs-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/hdfs/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/hdfs/solr/spool",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/hdfs/db/spool"
+    }
+  }
+},
+{ "ranger-hdfs-plugin-properties": {
+    "properties": {
+      "REPOSITORY_CONFIG_USERNAME": "{{ ranger_admin_username }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ ranger_admin_password }}",
+      "ranger-hdfs-plugin-enabled": "Yes",
+      "policy_user": "{{ ranger_policy_username }}"
+    }
+  }
+},
+{% endif %}
+{% if ranger_hive_plugin_enabled %}
+{
+  "ranger-hive-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/hive/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/hive/solr/spool",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/hive/db/spool"
+    }
+  }
+},
+{ "ranger-hive-plugin-properties": {
+    "properties": {
+      "REPOSITORY_CONFIG_USERNAME": "{{ ranger_admin_username }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ ranger_admin_password }}",
+      "ranger-hive-plugin-enabled": "Yes",
+      "policy_user": "{{ ranger_policy_username }}"
+    }
+  }
+},
+{% endif %}
+{% if ranger_kafka_plugin_enabled %}
+{
+  "ranger-kafka-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/kafka/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/kafka/solr/spool",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/kafka/db/spool"
+    }
+  }
+},
+{ "ranger-kafka-plugin-properties": {
+    "properties": {
+      "REPOSITORY_CONFIG_USERNAME": "{{ ranger_admin_username }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ ranger_admin_password }}",
+      "ranger-kafka-plugin-enabled": "Yes",
+      "policy_user": "{{ ranger_policy_username }}"
+    }
+  }
+},
+{% endif %}
+{% if ranger_knox_plugin_enabled %}
+{
+  "ranger-knox-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/knox/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/knox/solr/spool",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/knox/db/spool"
+    }
+  }
+},
+{ "ranger-knox-plugin-properties": {
+    "properties": {
+      "REPOSITORY_CONFIG_USERNAME": "{{ ranger_admin_username }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ ranger_admin_password }}",
+      "ranger-knox-plugin-enabled": "Yes",
+      "policy_user": "{{ ranger_policy_username }}"
+    }
+  }
+},
+{% endif %}
+{% if ranger_storm_plugin_enabled %}
+{
+  "ranger-storm-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/storm/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/storm/solr/spool",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/storm/db/spool"
+    }
+  }
+},
+{ "ranger-storm-plugin-properties": {
+    "properties": {
+      "REPOSITORY_CONFIG_USERNAME": "{{ ranger_admin_username }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ ranger_admin_password }}",
+      "ranger-storm-plugin-enabled": "Yes",
+      "policy_user": "{{ ranger_policy_username }}"
+    }
+  }
+},
+{% endif %}
+{% if ranger_yarn_plugin_enabled %}
+{
+  "ranger-yarn-audit" : {
+    "properties" : {
+      "xasecure.audit.destination.db": "true",
+      "xasecure.audit.destination.hdfs": "true",
+      "xasecure.audit.destination.hdfs.dir": "hdfs://{{ cluster_name }}/ranger/audit",
+      "xasecure.audit.destination.solr": "false",
+      "xasecure.audit.destination.hdfs.batch.filespool.dir" : "{{ log_dir }}/audit/yarn/hdfs/spool",
+      "xasecure.audit.is.enabled" : "true",
+      "xasecure.audit.destination.solr.batch.filespool.dir" : "{{ log_dir }}/audit/yarn/solr/spool",
+      "xasecure.audit.provider.summary.enabled" : "true",
+      "xasecure.audit.destination.db.batch.filespool.dir" : "{{ log_dir }}/audit/yarn/db/spool"
+    }
+  }
+},
+{ "ranger-yarn-plugin-properties": {
+    "properties": {
+      "REPOSITORY_CONFIG_USERNAME": "{{ ranger_admin_username }}",
+      "REPOSITORY_CONFIG_PASSWORD": "{{ ranger_admin_password }}",
+      "ranger-yarn-plugin-enabled": "Yes",
+      "policy_user": "{{ ranger_policy_username }}"
+    }
+  }
+}
+{% endif %}

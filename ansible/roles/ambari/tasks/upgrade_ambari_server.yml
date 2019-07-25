@@ -1,0 +1,13 @@
+---
+- name: Stop Ambari Server
+  command: /bin/true
+  notify:
+    - stop ambari_server
+- meta: flush_handlers
+- name: Upgrade Ambari Server
+  yum:
+    name: ambari-server
+    state: latest
+  notify:
+    - stop ambari_server
+- debug: msg="Run Manual Postgres Backup, Then run 'ambari-server upgrade'"

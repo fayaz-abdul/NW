@@ -1,0 +1,142 @@
+---
+- name: Install Dependent RPMS
+  yum:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  with_items:
+    - mysql-connector-java.noarch
+
+- name: Install Ambari Agents
+  yum:
+    name: ambari-agent
+    state: latest
+    update_cache: yes
+
+- name: Ensure ambari-agent is stopped
+  service:
+    name: ambari-agent
+    state: stopped
+
+- name: wait for ambari-agent to be stopped
+  pause:
+    seconds: "{{ service_delay }}"
+
+- name: Correct Ambari Agent hostname via agent override script
+  copy:
+    dest: /etc/ambari-agent/conf/hostname.sh
+    src: ambari_agent_hostname.sh
+    mode: 0755
+
+- name: Override Ambari Agent Config
+  template:
+    dest: /etc/ambari-agent/conf/ambari-agent.ini
+    src: ambari_agent.j2
+
+- name: Ensure ambari-agent is started
+  service:
+    name: ambari-agent
+    state: started
+    enabled: yes
+
+- name: Create Hadoop Profile
+  copy:
+    src: hadoop.sh
+    dest: /etc/profile.d/hadoop.sh
+
+- name: Fudge - Create Hadoop Group
+  group:
+    name: hadoop
+    state: present
+
+- name: Fudge - Create HDFS Group
+  group:
+    name: hdfs
+    state: present
+
+- name: Fudge - Create HDFS user to enable sshfencing
+  user:
+    name: hdfs
+    shell: /bin/bash
+    group: hdfs
+    password: "{{ hdfs_password }}"
+    update_password: always
+    comment: "HDFS User"
+
+- name: Create data log DIR
+  file:
+    state: directory
+    owner: root
+    group: hadoop
+    mode: 0755
+    recurse: yes
+    path: "{{ log_dir }}"
+
+- name: Fudge - Create yarn user to fix log
+  user:
+    name: yarn
+    shell: /bin/bash
+    group: hadoop
+    comment: "YARN Log User"
+
+- name: Create Yarn log DIR
+  file:
+    state: directory
+    owner: yarn
+    group: hadoop
+    mode: 0755
+    path: "{{ log_dir }}/yarn"
+
+- name: Fudge - Create AMS user to fix log
+  user:
+    name: ams
+    shell: /bin/bash
+    group: hadoop
+    comment: "AMS Log User"
+
+- name: Create AMS log DIR
+  file:
+    state: directory
+    owner: ams
+    group: hadoop
+    mode: 0755
+    path: "{{ log_dir }}/ams"
+
+- name: Add custom hdfs user sudo file
+  lineinfile:
+    dest: /etc/sudoers
+    line: "%hdfs ALL=NOPASSWD:/sbin/fuser"
+    state: present
+    regexp: "^%hdfs"
+
+- name: Create hdfs ssh directory
+  file:
+    path: /home/hdfs/.ssh
+    owner: hdfs
+    group: hdfs
+    mode: 0700
+    state: directory
+
+- name: Create HDFS ssh private key
+  copy:
+    content: "{{ hdfs_ssh_private_key }}"
+    dest: /home/hdfs/.ssh/id_rsa
+    owner: hdfs
+    group: hdfs
+    mode: 0400
+
+- name: Create HDFS ssh public key
+  copy:
+    content: "{{ hdfs_ssh_public_key }}"
+    dest: /home/hdfs/.ssh/authorized_keys
+    owner: hdfs
+    group: hdfs
+    mode: 0400
+
+- name: SSH config for hdfs user
+  copy:
+    src: hdfs_ssh_config
+    dest: /home/hdfs/.ssh/config
+    owner: hdfs
+    group: hdfs
+    mode: 0400

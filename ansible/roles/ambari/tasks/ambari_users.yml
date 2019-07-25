@@ -1,0 +1,12 @@
+---
+- name: copy Ambari add users to server
+  copy:
+    src: ambari_add_users.py
+    dest: /usr/local/bin/ambari_add_users.py
+    owner: root
+    group: root
+    mode: 0750
+
+- name: Ambari add users
+  shell: "/usr/local/bin/ambari_add_users.py -a {{ ambari_username }} -b {{ ambari_password }} -s localhost -t {{ ambari_port }} -u {{ item.user }} -p {{ item.password }} -c {{ cluster_name }}"
+  with_items: "{{ ambari_add_users }}"

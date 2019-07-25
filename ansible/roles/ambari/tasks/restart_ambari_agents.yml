@@ -1,0 +1,4 @@
+---
+- name: Restarting Ambari Agents
+  command: /bin/true
+  notify: restart ambari_agent

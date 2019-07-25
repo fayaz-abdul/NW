@@ -1,0 +1,71 @@
+{
+  "hadoop-env": {
+    "properties": {
+      "hdfs_log_dir_prefix": "{{log_dir}}",
+      "proxyuser_group": "{{hadoop_proxy_user_group}}",
+      "namenode_heapsize": "{{namenode_heapsize}}",
+      "namenode_opt_maxnewsize": "{{namenode_opt_maxnewsize}}",
+      "namenode_opt_newsize": "{{namenode_opt_newsize}}"
+    }
+  }
+},
+{
+  "core-site": {
+    "properties": {
+      "fs.defaultFS": "hdfs://{{ cluster_name }}",
+      "fs.default.name": "hdfs://{{ cluster_name }}",
+      "fs.trash.interval": "0",
+      "hadoop.tmp.dir": "{{tmp_dir}}/hadoop-{% raw %}${% endraw %}{user.name}",
+      "ha.zookeeper.quorum": "{% for item in groups['zookeeper_quorum_nodes'] %}{{ item }}{% if not loop.last %},{% endif %}{% endfor %}",
+      "hadoop.proxyuser.HTTP.groups": "{{hadoop_proxyuser_HTTP_groups}}",
+      "hadoop.proxyuser.HTTP.hosts": "{{hadoop_proxyuser_HTTP_hosts}}",
+      "hadoop.proxyuser.falcon.groups": "{{hadoop_proxyuser_falcon_groups}}",
+      "hadoop.proxyuser.falcon.hosts": "{{hadoop_proxyuser_falcon_hosts}}",
+      "hadoop.proxyuser.hbase.groups": "{{hadoop_proxyuser_hbase_groups}}",
+      "hadoop.proxyuser.hbase.hosts": "{{hadoop_proxyuser_hbase_hosts}}",
+      "hadoop.proxyuser.hcat.groups": "{{hadoop_proxyuser_hcat_groups}}",
+      "hadoop.proxyuser.hcat.hosts": "{{hadoop_proxyuser_hcat_hosts}}",
+      "hadoop.proxyuser.hive.groups": "{{hadoop_proxyuser_hive_groups}}",
+      "hadoop.proxyuser.hive.hosts": "{{hadoop_proxyuser_hive_hosts}}",
+      "hadoop.proxyuser.knox.groups": "{{hadoop_proxyuser_knox_groups}}",
+      "hadoop.proxyuser.knox.hosts": "{{hadoop_proxyuser_knox_hosts}}",
+      "hadoop.proxyuser.oozie.groups": "{{hadoop_proxyuser_oozie_groups}}",
+      "hadoop.proxyuser.oozie.hosts": "{{hadoop_proxyuser_oozie_hosts}}",
+      "hadoop.security.auth_to_local": "RULE:[1:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](ambari-qa@{{realm}})s/.*/ambari-qa/\nRULE:[1:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](hbase@{{realm}})s/.*/hbase/\nRULE:[1:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](hdfs@{{realm}})s/.*/hdfs/\nRULE:[1:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](.*@{{realm}})s/@.*//\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](amshbase@{{realm}})s/.*/ams/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](dn@{{realm}})s/.*/hdfs/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](falcon@{{realm}})s/.*/falcon/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](hbase@{{realm}})s/.*/hbase/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](hive@{{realm}})s/.*/hive/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](jhs@{{realm}})s/.*/mapred/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](jn@{{realm}})s/.*/hdfs/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](knox@{{realm}})s/.*/knox/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](nm@{{realm}})s/.*/yarn/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](nn@{{realm}})s/.*/hdfs/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](oozie@{{realm}})s/.*/oozie/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](rm@{{realm}})s/.*/yarn/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](yarn@{{realm}})s/.*/yarn/\nRULE:[2:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](zookeeper@{{realm}})s/.*/ams/\nRULE:[1:{% raw %}${% endraw %}1@{% raw %}${% endraw %}0](.*@{{realm}})s/@.*//\nDEFAULT"
+    }
+  }
+},
+{
+  "hdfs-site": {
+    "properties": {
+      "dfs.datanode.data.dir": "{% for disk in dfs_datanode_data_dir %}{{ disk }}{% if not loop.last %},{% endif %}{% endfor %}",
+      "dfs.namenode.name.dir": "{{ control_dir }}/namenode",
+      "dfs.namenode.checkpoint.dir": "{{ control_dir }}/checkpoint",
+      "dfs.blocksize": "{{ dfs_blocksize }}",
+      "nfs.file.dump.dir" : "{{tmp_dir}}/.hdfs-nfs",
+      "dfs.domain.socket.path": "{{ control_dir }}/dn_socket",
+      "dfs.client.failover.proxy.provider.{{ cluster_name }}": "org.apache.hadoop.hdfs.server.namenode.ha.ConfiguredFailoverProxyProvider",
+      "dfs.ha.automatic-failover.enabled": "true",
+      "dfs.ha.fencing.methods": "sshfence",
+      "dfs.ha.fencing.ssh.private-key-files": "/home/hdfs/ssh/id_rsa",
+      "dfs.ha.fencing.ssh.connect-timeout": "30000",
+      "dfs.ha.namenodes.{{ cluster_name }}": "nn1,nn2",
+      {% for host in groups['hadoop_namenode_server_nodes'] %}{% if loop.first %}"dfs.namenode.http-address": "{{ hostvars[host].ansible_hostname }}.{{ domain | lower}}:50070"{% endif %}{% endfor %},
+      {% for host in groups['hadoop_namenode_server_nodes'] %}{% if loop.first %}"dfs.namenode.https-address": "{{ hostvars[host].ansible_hostname }}.{{ domain| lower }}:50470"{% endif %}{% endfor %},
+      {% for host in groups['hadoop_namenode_server_nodes'] %}{% if loop.first %}"dfs.namenode.rpc-address": "{{ hostvars[host].ansible_hostname }}.{{ domain| lower }}:8020"{% endif %}{% endfor %},
+      {% for host in groups['hadoop_namenode_server_nodes'] %}"dfs.namenode.http-address.{{ cluster_name }}.nn{{ loop.index }}": "{{ hostvars[host].ansible_hostname }}.{{ domain | lower}}:50070"{% if not loop.last %},{% endif %}{% endfor %},
+      {% for host in groups['hadoop_namenode_server_nodes'] %}"dfs.namenode.https-address.{{ cluster_name }}.nn{{ loop.index }}": "{{ hostvars[host].ansible_hostname }}.{{ domain | lower}}:50470"{% if not loop.last %},{% endif %}{% endfor %},
+      {% for host in groups['hadoop_namenode_server_nodes'] %}"dfs.namenode.rpc-address.{{ cluster_name }}.nn{{ loop.index }}": "{{ hostvars[host].ansible_hostname }}.{{ domain | lower}}:8020"{% if not loop.last %},{% endif %}{% endfor %},
+      "dfs.namenode.shared.edits.dir": "qjournal://{% for host in groups['hadoop_namenode_server_nodes'] %}{{ hostvars[host].ansible_hostname }}.{{ domain | lower }}{% if not loop.last %};{% endif %}{% if loop.last %}:8485/{{ cluster_name }}"{% endif %}{% endfor %},
+      "dfs.nameservices": "{{ cluster_name }}",
+      "dfs.datanode.du.reserved": "{{ dfs_datanode_du_reserved }}",
+      "dfs.datanode.failed.volumes.tolerated": "{{ dfs_datanode_failed_volumes_tolerated }}",
+      "dfs.datanode.max.transfer.threads": "{{ dfs_datanode_max_transfer_threads }}",
+      "fs.permissions.umask-mode": "022",
+      "dfs.permissions.enabled": "dfs_permissions_enabled",
+      "dfs.permissions.superusergroup": "dfs_permissions_superusergroup",
+      {% if ranger_hdfs_plugin_enabled %}"dfs.namenode.inode.attributes.provider.class": "org.apache.ranger.authorization.hadoop.RangerHdfsAuthorizer",{% endif %}
+      "dfs.cluster.administrators": "dfs_cluster_administrators"
+    }
+  }
+}

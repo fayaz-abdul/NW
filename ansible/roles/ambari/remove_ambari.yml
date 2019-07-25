@@ -1,0 +1,69 @@
+---
+- hosts: cleanup
+  tasks:
+    - name: Remove Ambari Packages
+      yum:
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - ambari-agent
+        - ambari-server
+        - postgresql-jdbc
+        - postgresql-libs
+        - postgresql-server
+        - postgresql
+        - mysql-connector-java
+        - mysql-libs
+        - mysql-server
+        - mysql
+
+    - name: Remove Hadoop RPMS
+      shell: "rpm -qa | grep 2.3.4 | xargs --no-run-if-empty yum remove -y"
+
+    - name: kill java
+      shell: "ps -ef|grep java | grep -v grep | tr -s \" \" | cut -f 2 -d \" \" | xargs --no-run-if-empty kill -9"
+    
+    - name: Remove Configuration / Lib and Data Directories
+      file: 
+        name: "{{ item }}"
+        state: absent
+      with_items:
+        - /var/lib/pgsql
+        - /var/lib/ambari-server
+        - /var/lib/ambari-agent
+        - /var/lib/hadoop-hdfs
+        - /var/lib/hadoop-httpfs
+        - /var/lib/hadoop-mapreduce
+        - /var/lib/hadoop-yarn
+        - /var/lib/hive
+        - /etc/ambari-server
+        - /etc/ambari-agent
+        - /etc/hadoop
+        - /etc/hadoop-httpfs
+        - /etc/hive
+        - /etc/hive-hcatalog
+        - /etc/hive-webhcat
+        - /etc/zookeeper
+        - /usr/hdp
+        - /var/log/postgres
+        - /var/log/ambari-server
+        - /var/log/ambari-agent
+        - /var/log/hadoop
+        - /var/log/hadoop-mapreduce
+        - /var/log/hadoop-yarn
+        - /var/log/hive
+        - /var/log/hive-hcatalog
+        - /var/log/zookeeper
+        - /data/00
+        - /data/01
+        - /data/02
+        - /data/03
+        - /data/04
+        - /data/05
+        - /data/06
+        - /data/07
+        - /data/08
+        - /data/09
+        - /data/10
+        - /data/11
+        - /tmp/hadoop-hdfs

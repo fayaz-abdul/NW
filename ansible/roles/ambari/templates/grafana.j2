@@ -1,0 +1,20 @@
+{
+  "ams-grafana-env" : {
+    "properties" : {
+      "metrics_grafana_log_dir" : "{{ log_dir }}/ambari-metrics-grafana",
+      "metrics_grafana_pid_dir" : "/var/run/ambari-metrics-grafana",
+      "metrics_grafana_data_dir" : "{{ control_dir }}/ambari-metrics-grafana",
+      "metrics_grafana_username" : "admin"
+    }
+  }
+},
+{
+  "ams-grafana-ini" : {
+    "properties" : {
+      "protocol" : "http",
+      "cert_key" : "/etc/ambari-metrics-grafana/conf/ams-grafana.key",
+      "port" : "3000",
+      "cert_file" : "/etc/ambari-metrics-grafana/conf/ams-grafana.crt"
+    }
+  }
+}

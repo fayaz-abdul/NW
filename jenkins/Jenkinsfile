@@ -1,0 +1,330 @@
+import groovy.json.JsonSlurperClassic
+
+def foundStartingStage = false
+
+def runPipelineBuild(playPath, flags = '') {
+  withCredentials(
+    [[$class: 'StringBinding', credentialsId: "${SSH_CREDENTIALS}", variable: 'BASE64_SSH_KEY']]) {
+    withCredentials(
+      [[$class: 'StringBinding', credentialsId: "${ANSIBLE_CREDENTIALS}", variable: 'BASE64_ANSIBLE_KEY']]) {
+      withCredentials(
+        [[$class: 'StringBinding', credentialsId: "${SSH_CREDENTIALS}", variable: 'BASE64_SSH_KEY']]) {
+        withCredentials(
+          [[$class          : 'UsernamePasswordMultiBinding', credentialsId: "${AWS_CREDENTIALS}",
+            usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+
+          sh "set -x; ./pipeline.sh --build \$(basename \"${playPath}\") ${flags}"
+        }
+      }
+    }
+  }
+}
+
+def runPipelineTerraform(playPath, flags = '') {
+  withCredentials(
+    [[$class          : 'UsernamePasswordMultiBinding', credentialsId: "${AWS_CREDENTIALS}",
+      usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+
+    sh "set -x; ./pipeline.sh --terraform \"${playPath}\" ${flags} --verbose"
+  }
+}
+
+def getArtifactoryRegistry() {
+  if (AWS_DEFAULT_REGION == "eu-west-2") {
+    host = "artifactory.bx.homeoffice.gov.uk"
+  } else {
+    host = "artifactory.bx.homeoffice.gov.uk"
+  }
+  print "Artifactory Registry for region '${AWS_DEFAULT_REGION}' is '${host}'"
+  return host
+}
+
+def runBuild(config, command) {
+  runDockerImage(getArtifactoryRegistry() + "/docker-local/infra-build-tools:${IMAGE_VERSION}", config, command)
+}
+
+def runEnvironmentDetails(config, command) {
+  getEnvironmentInformation(getArtifactoryRegistry() + "/docker-local/infra-build-tools:${IMAGE_VERSION}", config, command)
+}
+
+def runDockerImage(image, config, command) {
+  withCredentials(
+    [[$class: 'StringBinding', credentialsId: "${SSH_CREDENTIALS}", variable: 'BASE64_SSH_KEY']]) {
+    withCredentials(
+      [[$class          : 'UsernamePasswordMultiBinding', credentialsId: "${AWS_CREDENTIALS}",
+        usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+            sh "docker run -t --rm \
+                     -e ENVIRONMENT=${ENVIRONMENT} \
+                     -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+                     -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+                     -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+                     --env-file ./env.list \
+                     ${config} \
+                     ${image} \
+                     ${command} \
+                     "
+    }
+  }
+}
+
+def getEnvironmentInformation(image, config, command) {
+  withCredentials(
+    [[$class: 'StringBinding', credentialsId: "${SSH_CREDENTIALS}", variable: 'BASE64_SSH_KEY']]) {
+    withCredentials(
+      [[$class          : 'UsernamePasswordMultiBinding', credentialsId: "${AWS_CREDENTIALS}",
+        usernameVariable: 'AWS_ACCESS_KEY_ID', passwordVariable: 'AWS_SECRET_ACCESS_KEY']]) {
+
+            sh "docker run -t --rm \
+                     -e ENVIRONMENT=${ENVIRONMENT} \
+                     -e AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION} \
+                     -e AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY} \
+                     -e AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID} \
+                     --env-file ./env.list \
+                     ${config} \
+                     ${image} \
+                     ${command} \
+                     > commandStatus"
+            def rFile = readFile('commandStatus').trim()
+            def jsonOutput = rFile.substring(rFile.indexOf("{"))
+            def JsonSlurperClassic = new JsonSlurperClassic()
+            def environmentInformation = JsonSlurperClassic.parseText(jsonOutput)
+            return environmentInformation
+    }
+  }
+}
+
+def _stage = {
+  stageName, work ->
+    if (START_AT_STAGE != '' && !foundStartingStage) {
+      if (stageName != START_AT_STAGE) {
+        stage(stageName) {
+          print "<START_AT_STAGE> skipping " + stageName
+        }
+        return
+      }
+      foundStartingStage = true
+    }
+
+    stage(stageName) {
+      try {
+        work.call()
+      }
+      catch (error) {
+        throw error
+      }
+    }
+}
+
+def _test = {
+  stageName, serverspecRolesAll, serverspecRolesMaster, propagate ->
+
+    _stage("Test ${stageName}") {
+
+      if (!serverspecRolesAll) {
+        serverspecRolesAll = ''
+      }
+      if (!serverspecRolesMaster) {
+        serverspecRolesMaster = ''
+      }
+
+      print "\nRunning `${stageName}` with:\nall: ${serverspecRolesAll}\nmaster: ${serverspecRolesMaster}\n"
+
+      build job: "${JOB_NAME}_test", quietPeriod: 0, propagate: propagate ? true : false, parameters:
+        [
+          [
+            $class: 'StringParameterValue',
+            name  : 'SERVERSPEC_ROLES_ALL',
+            value : serverspecRolesAll
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'SERVERSPEC_ROLES_MASTER',
+            value : serverspecRolesMaster
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'ENVIRONMENT',
+            value : ENVIRONMENT
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'IMAGE_VERSION',
+            value : IMAGE_VERSION
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'AWS_CREDENTIALS',
+            value : "${ENVIRONMENT}_aws_credentials"
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'DOCKER_CREDENTIALS',
+            value : "${ENVIRONMENT}_docker_credentials"
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'GITLAB_ENVIRONMENT',
+            value : "${ENVIRONMENT}_gitlab_jenkins_credentials"
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'SSH_CREDENTIALS',
+            value : "${ENVIRONMENT}_ssh_credentials"
+          ],
+          [
+            $class: 'StringParameterValue',
+            name  : 'ANSIBLE_CREDENTIALS',
+            value : "${ENVIRONMENT}_ansible_credentials"
+          ]
+        ]
+    }
+}
+
+// -------------------------
+
+
+node {
+
+  // this enables a START_AT_STAGE parameter to start a pipeline at a given stage
+  if (START_AT_STAGE != '') {
+    print "<START_AT_STAGE> skipping to: " + START_AT_STAGE
+  }
+
+  ansiColor('xterm') {
+
+    //convert to boolean
+    TERRAFORM=env.TERRAFORM.toBoolean()
+    POSTGRES=env.POSTGRES.toBoolean()
+    BDRM=env.BDRM.toBoolean()
+    DATAINGEST=env.DATAINGEST.toBoolean()
+
+    // force clean of old runs
+    stage('Cleanup') {
+      withCredentials(
+        [[
+           $class          : 'UsernamePasswordMultiBinding',
+           credentialsId   : "${DOCKER_CREDENTIALS}",
+           usernameVariable: 'DOCKER_USERNAME',
+           passwordVariable: 'DOCKER_PASSWORD'
+         ]]
+      ) {
+        ARTIFACTORY_REGISTRY= getArtifactoryRegistry()
+        // symlink in Docker to get around the needless usage of docker version manager (!)
+        // TODO: install docker in base image
+        sh  "ln -fs /root/.dvm/bin/docker/`dvm list | grep -v system | head -n1 | sed -E 's,^(->)* *,,' | xargs`/docker /usr/local/bin/"
+
+        sh  "docker login \
+                        --username ${DOCKER_USERNAME} \
+                        --password ${DOCKER_PASSWORD} \
+                        ${ARTIFACTORY_REGISTRY}"
+        sh "docker rmi --force ${ARTIFACTORY_REGISTRY}/infra-build-tools:latest || true"
+      }
+    }
+
+    stage('Checkout Environment') {
+      git url: 'ssh://git@gitlab.bx.homeoffice.gov.uk/devops/data_platform_environments.git',
+        changelog: false,
+        branch: 'master',
+        credentialsId: "${GITLAB_ENVIRONMENT}"
+      sh ' \
+      if [[ ! -d "${ENVIRONMENT}" ]]; then \
+        echo "${ENVIRONMENT} folder does not exist in this repo"; \
+        exit 1; \
+      fi; \
+      \
+      git log -1; (set +x; echo "BASE64_FOLDER=$(tar zcf - ${ENVIRONMENT} | base64 -w0)" > env.list);'
+    }
+    if (TERRAFORM==true) {
+      _stage('Build AWS Environment') {
+        if (env.POSTGRES) {
+          runPipelineTerraform "aws/data-layer/london_all_no_rds/"
+        } else {
+          runPipelineTerraform "aws/data-layer/all/"
+        }
+        // Waiting for environment to be created.
+        sleep 180
+      }
+
+      try {
+        _test('Terraform', 'terraform', null, true)
+      } catch (e) {
+        currentBuild.result = "FAILURE"
+        sh "echo Race condition SSH-ing into Terraform boxes: awaiting server boot"
+        timeout(time: 180, unit: 'SECONDS') {
+          retry(2) {
+            sleep 60
+            _test('Terraform', 'terraform', null, true)
+          }
+        }
+      }
+
+    }
+
+    if (POSTGRES==true) {
+      _stage('Provision DB Services') {
+
+        runPipelineBuild "/etc/ansible/plays/database_play.yml", "--verbose"
+      }
+
+      _test('Postgres', null, 'postgres', true)
+    }
+
+    _stage('Provision Ambari') {
+      try {
+        // Mark Olliver doesn't know if this is currently needed, but suspects so
+        // runPipelineBuild "/etc/ansible/plays/dnsmasq_play.yml"
+        runPipelineBuild "/etc/ansible/plays/ambari_play.yml", "--verbose"
+
+      } catch (err) {
+        currentBuild.result = "FAILURE"
+
+        sh "echo Ambari console logs are nondescript. Debug failures in the Ambari UI on :8443"
+
+        throw err
+      }
+    }
+
+    _stage('Test Ambari') {
+      runPipelineBuild "/etc/ansible/plays/ambari_tests.yml", "--verbose"
+    }
+
+    if (BDRM==true) {
+      _stage('Provision BDRM Services') {
+
+        runPipelineBuild "/etc/ansible/plays/informatica_play.yml", "--verbose"
+      }
+
+      _test('BDRM', 'informatica-common', 'informatica-master', true)
+    }
+
+    _test('Data Layer', null, 'data-layer', true)
+
+    if (DATAINGEST==true) {
+      _stage('Data Ingest') {
+        def currentEnvironment = runEnvironmentDetails "-e WORKDIR=/etc/terraform",
+          "/bin/bash -c 'pwd; terragrunt get aws/data-layer/london_all_no_rds && \
+            cp terraform.tfvars aws/data-layer/london_all_no_rds && cd  aws/data-layer/london_all_no_rds && \
+            echo yes| terragrunt init && terragrunt output --json'"
+        def BDRM_SERVER_IP = currentEnvironment.node_pips_primary_master.value[1].trim()
+        build job: "${JOB_NAME}_data_ingest", quietPeriod: 0, parameters:
+          [
+            [
+              $class: 'StringParameterValue',
+              name  : 'BDRM_SERVER',
+              value : BDRM_SERVER_IP
+            ],
+            [
+              $class: 'StringParameterValue',
+              name  : 'SSH_CREDENTIALS',
+              value : "${ENVIRONMENT}_ssh_credentials"
+            ]
+          ]
+      }
+
+      _test('Data Ingest', null, 'data-ingest', true)
+    }
+
+    deleteDir()
+  }
+
+}

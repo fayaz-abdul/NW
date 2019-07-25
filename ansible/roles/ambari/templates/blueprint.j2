@@ -1,0 +1,101 @@
+{
+  "Blueprints":{
+    "stack_name": "{{ stack_name }}",
+    "stack_version": "{{ stack_version }}"
+  },
+  "configurations": [
+    {% if pig_enable %}{% include "pig.j2" %},{% endif %}
+    {% if hive_enable %}{% include "hive.j2" %},{% endif %}
+    {% if tez_enable %}{% include "tez.j2" %},{% endif %}
+    {% if mapreduce_enable %}{% include "mapreduce.j2" %},{% endif %}
+    {% if ams_enable %}{% include "ams.j2" %},{% endif %}
+    {% if grafana_enable %}{% include "grafana.j2" %},{% endif %}
+    {% if slider_enable %}{% include "slider.j2" %},{% endif %}
+    {% if kafka_enable %}{% include "kafka.j2" %},{% endif %}
+    {% if storm_enable %}{% include "storm.j2" %},{% endif %}
+    {% if hbase_enable %}{% include "hbase.j2" %},{% endif %}
+    {% if spark_enable %}{% include "spark.j2" %},{% endif %}
+    {% if yarn_enable %}{% include "yarn.j2" %},{% endif %}
+    {% if yarn_enable %}{% include "yarn_capacity.j2" %},{% endif %}
+    {% if ranger_enable %}{% include "ranger.j2" %},{% endif %}
+    {% if rangerkms_enable %}{% include "ranger_kms.j2" %},{% endif %}
+    {% if knox_enable %}{% include "knox.j2" %},{% endif %}
+    {% if zeppelin_enable %}{% include "zeppelin.j2" %},{% endif %}
+    {% if hadoop_enable %}{% include "hadoop.j2" %},{% endif %}
+    {% if zk_enable %}{% include "zookeeper.j2" %}{% endif %}
+  ],
+  "host_groups":[
+    {
+      "name": "hadoop_primary_ambari_server_nodes",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_primary_ambari_server_nodes'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }
+    {% if groups['hadoop_primary_master_node1'] %},{
+      "name": "hadoop_primary_master_node1",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_primary_master_node1'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node2'] %},{
+      "name": "hadoop_primary_master_node2",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_primary_master_node2'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node3'] %},{
+      "name": "hadoop_primary_master_node3",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_primary_master_node3'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node4'] %},{
+      "name": "hadoop_primary_master_node4",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_primary_master_node4'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_node5'] %},{
+      "name": "hadoop_primary_master_node5",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_primary_master_node5'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_master_nodes'] %},{
+      "name": "hadoop_primary_master_nodes",
+      "cardinality": "3",
+      "components":
+        [ {% for host in groups['hadoop_primary_master_nodes'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_secondary_master_nodes'] %},{
+      "name": "hadoop_secondary_master_nodes",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_secondary_master_nodes'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_security_nodes'] %},{
+      "name": "hadoop_primary_security_nodes",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_primary_security_nodes'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_secondary_security_nodes'] %},{
+      "name": "hadoop_secondary_security_nodes",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_secondary_security_nodes'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_primary_data_nodes'] %},{
+      "name": "hadoop_primary_data_nodes",
+      "cardinality": "4",
+      "components":
+        [ {% for host in groups['hadoop_primary_data_nodes'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+    {% if groups['hadoop_secondary_data_nodes'] %},{
+      "name": "hadoop_secondary_data_nodes",
+      "cardinality": "1",
+      "components":
+        [ {% for host in groups['hadoop_secondary_data_nodes'] %}{% if loop.first %}{% set hostvar = hostvars[host] %}{% for resource in hostvar.resources %} { "name": "{{ resource }}{% if not loop.last %}" }, {% else %}" }{% endif %}{% endfor %}{% endif %}{% endfor %} ]
+    }{% endif %}
+  ]
+}

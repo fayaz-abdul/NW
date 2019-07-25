@@ -1,0 +1,60 @@
+---
+- name: Create Ambari updates directory
+  file:
+    path: /tmp/ambari_updates
+    owner: root
+    group: hadoop
+    mode: 0755
+    state: directory
+  when: current_blueprint.status_code==200 or current_bluprint.status_code==201 or current_blueprint.status_code==202
+
+- name: Copy Ambari update configs to remote
+  template:
+    dest: "/tmp/ambari_updates/{{ item|basename }}.json"
+    owner: root
+    group: hadoop
+    mode: 0644
+    src: "{{ item }}.j2"
+  with_items:
+    - yarn/yarn-env
+    - hbase/hbase-env
+    - hbase/hbase-log4j
+    - kafka/kafka-env
+    - kafka/kafka-log4j
+    - spark/spark-env
+    - spark/spark-defaults
+    - spark/spark-log4j-properties
+
+- name: Update Ambari Configs
+  shell: "/var/lib/ambari-server/resources/scripts/configs.sh -u {{ ambari_username }} -p {{ ambari_password }} -port {{ ambari_port }} set {{ ansible_fqdn }} {{ blueprint }} {{ item }} {{ item }}.json"
+  args:
+    chdir: /tmp/ambari_updates
+  with_items:
+    - yarn-env
+    - hbase-env
+    - hbase-log4j
+    - kafka-env
+    - kafka-log4j
+    - spark-env
+    - spark-defaults
+    - spark-log4j-properties
+
+- name: copy Ambari services restart restart to server
+  copy:
+    src: ambari_service_restart.py
+    dest: /usr/local/bin/ambari_service_restart.py
+    owner: root
+    group: root
+    mode: 0750
+
+- name: Ambari Services restart
+  shell: /usr/local/bin/ambari_service_restart.py -u {{ ambari_username }} -a {{ ambari_password }} -p {{ ambari_http }} -s {{ ansible_fqdn }} -d {{ ambari_port }} -c {{ blueprint }}
+  args:
+    chdir: /usr/local/bin
+
+#- name: Delete Ambari updates directory
+#  file:
+#    path: /tmp/ambari_updates
+#    owner: root
+#    group: hadoop
+#    state: absent

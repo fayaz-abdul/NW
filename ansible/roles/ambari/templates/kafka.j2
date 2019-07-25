@@ -1,0 +1,21 @@
+{
+  "kafka-env": {
+    {% include "kafka/kafka-env.j2" %}
+  }
+},
+{
+  "kafka-broker": {
+    "properties": {
+      "listeners": "PLAINTEXT://localhost:6667",
+      "default.replication.factor": "{{ kafka_default_replication_factor }}",
+      "log.dirs": "{% for dir in kafka_data_dir %}{{ dir }}{% if not loop.last %},{% endif %}{% endfor %}",
+      {% if ranger_kafka_plugin_enabled %}"authorizer.class.name": "org.apache.ranger.authorization.kafka.authorizer.RangerKafkaAuthorizer",{% endif %}
+      "zookeeper.connect": "{% for item in groups['zookeeper_quorum_nodes'] %}{{ item }}{% if not loop.last %}:2181,{% endif %}{% if loop.last %}:2181/kafka{% endif %}{% endfor %}"
+    }
+  }
+},
+{
+  "kafka-log4j": {
+    {% include "kafka/kafka-log4j.j2" %}
+  }
+}

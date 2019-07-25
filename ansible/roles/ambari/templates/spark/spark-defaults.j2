@@ -1,0 +1,20 @@
+"properties": {
+"spark.driver.extraClassPath": "/usr/hdp/current/hadoop-client/client/snappy-java.jar",
+"spark.executor.extraClassPath": "/usr/hdp/current/hadoop-client/client/snappy-java.jar",
+"spark.eventLog.dir" : "hdfs:///spark-history",
+"spark.eventLog.enabled" : "true",
+"spark.history.fs.logDirectory" : "hdfs:///spark-history",
+"spark.history.kerberos.keytab" : "none",
+"spark.history.kerberos.principal" : "none",
+"spark.history.provider" : "org.apache.spark.deploy.history.FsHistoryProvider",
+"spark.history.ui.port" : "18080",
+"spark.yarn.containerLauncherMaxThreads" : "25",
+"spark.yarn.driver.memoryOverhead" : "384",
+"spark.yarn.executor.memoryOverhead" : "384",
+"spark.yarn.historyServer.address" : "{% raw %}{{spark_history_server_host}}:{{spark_history_ui_port}}{% endraw %}",
+"spark.yarn.max.executor.failures" : "3",
+"spark.yarn.preserve.staging.files" : "false",
+"spark.yarn.queue" : "default",
+"spark.yarn.scheduler.heartbeat.interval-ms" : "5000",
+"spark.yarn.submit.file.replication" : "3"
+}
