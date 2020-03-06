@@ -1,0 +1,784 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ServerFarm_EastUSLinuxDynamicPlan": {
+            "defaultValue": "EastUSLinuxDynamicPlanSbox2",
+            "type": "string"
+        },
+        "Sites_EastUS_FuncApp_SBox2_OverWatch": {
+            "defaultValue": "EUS-FA-sbox2-overwatch-functions",
+            "type": "string"
+        },
+        "components_eusoverwatchfuncstor_name": {
+            "defaultValue": "eusoverwatchfuncstor",
+            "type": "string"
+        },
+        "storageAccounts_eusoverwatchfuncstor_name": {
+            "defaultValue": "eusoverwatchfuncstor",
+            "type": "string"
+        },
+        "smartdetectoralertrules_failure_anomalies___eusoverwatchfuncstor_name": {
+            "defaultValue": "failure anomalies - eusoverwatchfuncstor",
+            "type": "string"
+        },
+        "actiongroups_application_20insights_20smart_20detection_externalid": {
+            "defaultValue": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/resourceGroups/rg-overwatch-sbox2/providers/microsoft.insights/actiongroups/application%20insights%20smart%20detection",
+            "type": "string"
+        },
+        "connections_ascalert_name": {
+            "defaultValue": "ascalert",
+            "type": "string"
+        },
+        "connections_sendgrid_name": {
+            "defaultValue": "sendgrid",
+            "type": "string"
+        },
+        "connections_sendgrid_1_name": {
+            "defaultValue": "sendgrid-1",
+            "type": "string"
+        },
+        "connections_sendgrid_2_name": {
+            "defaultValue": "sendgrid-2",
+            "type": "string"
+        },
+        "connections_azuretables_name": {
+            "defaultValue": "azuretables",
+            "type": "string"
+        },
+        "connections_ascassessment_name": {
+            "defaultValue": "ascassessment",
+            "type": "string"
+        },
+        "storageAccounts_eussaoverwatchstore_name": {
+            "defaultValue": "eusoverwatchstor",
+            "type": "string"
+        },
+        "serverfarms_ASP_EUSRSGDEVTSToverwatchalerts_8161_name": {
+            "defaultValue": "ASP-EUSRSGDEVTSToverwatchalerts-8161",
+            "type": "string"
+        },
+        "WF_Email_Sec_Alert": {
+            "defaultValue": "EastUS-LogicApp-SBox2-OverWatch-Email-Sec-Alert",
+            "type": "string"
+        },
+        "WF_Tag_Compliance_Check": {
+            "defaultValue": "EastUS-LogicApp-SBox2-Tag-Compliance-Check",
+            "type": "string"
+        },
+        "Components_EastUS_FuncApp_SBox2_OverWatch_Fetch_Details": {
+            "defaultValue": "EastUS-FuncApp-SBox2-OverWatch-Fetch-Details",
+            "type": "string"
+        },
+        "workflows_EUS_LA_DEVTST_send_scheduled_email_for_alert_name": {
+            "defaultValue": "EUS-LA-DEVTST-send-scheduled-email-for-alert",
+            "type": "string"
+        },
+        "IntegrationAccount_EastUS_SBox2_OverWatch": {
+            "defaultValue": "EastUS-IntAcct-SBox2-OverWatch",
+            "type": "string"
+        },
+        "workflows_EUS_LA_DEVTST_handle_policy_compliance_alerts_name": {
+            "defaultValue": "EUS-LA-DEVTST-handle-policy-compliance-alerts",
+            "type": "string"
+        },
+        "Sites_EastUS_FuncApp_SBox2_OverWatch_ExternalID": {
+            "defaultValue": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/resourceGroups/rg-overwatch-sbox2/providers/Microsoft.Web/sites/EastUS-FuncApp-SBox2-OverWatch",
+            "type": "string"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Insights/components",
+            "apiVersion": "2015-05-01",
+            "name": "[parameters('components_eusoverwatchfuncstor_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "kind": "web",
+            "properties": {
+                "Application_Type": "web"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-04-01",
+            "name": "[parameters('storageAccounts_eusoverwatchfuncstor_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "12345-67"
+            },
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "enabled": true
+                        },
+                        "blob": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('ServerFarm_EastUSLinuxDynamicPlan')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0
+            }
+        },
+        {
+            "type": "Microsoft.Alertsmanagement/smartdetectoralertrules",
+            "apiVersion": "2019-06-01",
+            "name": "[parameters('smartdetectoralertrules_failure_anomalies___eusoverwatchfuncstor_name')]",
+            "location": "global",
+            "dependsOn": [
+                "[resourceId('Microsoft.Insights/components', parameters('components_eusoverwatchfuncstor_name'))]"
+            ],
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "description": "Failure Anomalies notifies you of an unusual rise in the rate of failed HTTP requests or dependency calls.",
+                "state": "Enabled",
+                "severity": "Sev3",
+                "frequency": "PT1M",
+                "detector": {
+                    "id": "FailureAnomaliesDetector"
+                },
+                "scope": [
+                    "[resourceId('microsoft.insights/components', parameters('components_eusoverwatchfuncstor_name'))]"
+                ],
+                "actionGroups": {
+                    "groupIds": [
+                        "[parameters('actiongroups_application_20insights_20smart_20detection_externalid')]"
+                    ]
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eusoverwatchfuncstor_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eusoverwatchfuncstor_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "apiVersion": "2018-11-01",
+            "name": "[parameters('Sites_EastUS_FuncApp_SBox2_OverWatch')]",
+            "location": "eastus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarm_EastUSLinuxDynamicPlan'))]"
+            ],
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "kind": "functionapp,linux",
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "EastUS-FuncApp-SBox2-OverWatch.azurewebsites.net",
+                        "sslState": "Disabled",
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "EastUS-FuncApp-SBox2-OverWatch.scm.azurewebsites.net",
+                        "sslState": "Disabled",
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', parameters('ServerFarm_EastUSLinuxDynamicPlan'))]",
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "scmSiteAlsoStopped": false,
+                "clientAffinityEnabled": false,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "httpsOnly": false,
+                "redundancyMode": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/config",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('Sites_EastUS_FuncApp_SBox2_OverWatch'), '/web')]",
+            "location": "eastus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('Sites_EastUS_FuncApp_SBox2_OverWatch'))]"
+            ],
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "numberOfWorkers": 1,
+                "defaultDocuments": [
+                    "Default.htm",
+                    "Default.html",
+                    "Default.asp",
+                    "index.htm",
+                    "index.html",
+                    "iisstart.htm",
+                    "default.aspx",
+                    "index.php"
+                ],
+                "netFrameworkVersion": "v4.0",
+                "linuxFxVersion": "PYTHON|3.7",
+                "requestTracingEnabled": false,
+                "remoteDebuggingEnabled": false,
+                "remoteDebuggingVersion": "VS2019",
+                "httpLoggingEnabled": false,
+                "logsDirectorySizeLimit": 35,
+                "detailedErrorLoggingEnabled": false,
+                "publishingUsername": "$EastUS-FuncApp-SBox2-OverWatch",
+                "scmType": "None",
+                "use32BitWorkerProcess": false,
+                "webSocketsEnabled": false,
+                "alwaysOn": false,
+                "managedPipelineMode": "Integrated",
+                "virtualApplications": [
+                    {
+                        "virtualPath": "/",
+                        "physicalPath": "site\\wwwroot",
+                        "preloadEnabled": false
+                    }
+                ],
+                "loadBalancing": "LeastRequests",
+                "experiments": {
+                    "rampUpRules": []
+                },
+                "autoHealEnabled": false,
+                "cors": {
+                    "allowedOrigins": [
+                        "https://functions.azure.com",
+                        "https://functions-staging.azure.com",
+                        "https://functions-next.azure.com"
+                    ],
+                    "supportCredentials": false
+                },
+                "localMySqlEnabled": false,
+                "ipSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictions": [
+                    {
+                        "ipAddress": "Any",
+                        "action": "Allow",
+                        "priority": 1,
+                        "name": "Allow all",
+                        "description": "Allow all access"
+                    }
+                ],
+                "scmIpSecurityRestrictionsUseMain": false,
+                "http20Enabled": false,
+                "minTlsVersion": "1.2",
+                "ftpsState": "AllAllowed",
+                "reservedInstanceCount": 0
+            }
+        },
+        {
+            "type": "Microsoft.Web/sites/hostNameBindings",
+            "apiVersion": "2018-11-01",
+            "name": "[concat(parameters('Sites_EastUS_FuncApp_SBox2_OverWatch'), '/', parameters('Sites_EastUS_FuncApp_SBox2_OverWatch'), '.azurewebsites.net')]",
+            "location": "eastus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/sites', parameters('Sites_EastUS_FuncApp_SBox2_OverWatch'))]"
+            ],
+            "properties": {
+                "siteName": "EastUS-FuncApp-SBox2-OverWatch",
+                "hostNameType": "Verified"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eusoverwatchfuncstor_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_eusoverwatchfuncstor_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eusoverwatchfuncstor_name'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eusoverwatchfuncstor_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_eusoverwatchfuncstor_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eusoverwatchfuncstor_name'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eusoverwatchfuncstor_name'), '/default/scm-releases')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_eusoverwatchfuncstor_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eusoverwatchfuncstor_name'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Insights/components",
+            "apiVersion": "2015-05-01",
+            "name": "[parameters('Components_EastUS_FuncApp_SBox2_OverWatch_Fetch_Details')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "kind": "web",
+            "properties": {
+                "Application_Type": "web",
+                "Request_Source": "rest"
+            }
+        },
+        {
+            "type": "Microsoft.Logic/integrationAccounts",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('IntegrationAccount_EastUS_SBox2_OverWatch')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "sku": {
+                "name": "Standard"
+            },
+            "properties": {
+                "state": "Enabled"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2019-04-01",
+            "name": "[parameters('storageAccounts_eussaoverwatchstore_name')]",
+            "location": "eastus",
+            "tags": {
+                "TechnicalOwner": "vannier.maxence@bcg.com",
+                "CostCenter": "12345-67"
+            },
+            "sku": {
+                "name": "Standard_RAGRS",
+                "tier": "Standard"
+            },
+            "kind": "StorageV2",
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "enabled": true
+                        },
+                        "blob": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "accessTier": "Hot"
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_ascalert_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "displayName": "Security Center Alert",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/', parameters('connections_ascalert_name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_ascassessment_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "displayName": "Security Center Recommendation",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/', parameters('connections_ascassessment_name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_azuretables_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "displayName": "overwatch-store",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/', parameters('connections_azuretables_name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_sendgrid_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "displayName": "[concat('EUS-SG-DEVTST-', parameters('connections_sendgrid_name'), '-email')]",
+                "customParameterValues": {},
+                "api": {
+                    "id": "[concat('/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/', parameters('connections_sendgrid_name'))]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_sendgrid_1_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "displayName": "EUS-SG-DEVTST-sendgrid-email2",
+                "customParameterValues": {},
+                "api": {
+                    "id": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/sendgrid"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('connections_sendgrid_2_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "properties": {
+                "displayName": "SendGrid-Max-Api",
+                "customParameterValues": {},
+                "api": {
+                    "id": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/sendgrid"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2018-02-01",
+            "name": "[parameters('serverfarms_ASP_EUSRSGDEVTSToverwatchalerts_8161_name')]",
+            "location": "eastus",
+            "tags": {
+                "CostCenter": "Shyam Testing Again"
+            },
+            "sku": {
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": true,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eussaoverwatchstore_name'), '/default')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eussaoverwatchstore_name'))]"
+            ],
+            "sku": {
+                "name": "Standard_RAGRS"
+            },
+            "properties": {
+                "cors": {
+                    "corsRules": []
+                },
+                "deleteRetentionPolicy": {
+                    "enabled": false
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eussaoverwatchstore_name'), '/default/azure-webjobs-hosts')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_eussaoverwatchstore_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eussaoverwatchstore_name'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eussaoverwatchstore_name'), '/default/azure-webjobs-secrets')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_eussaoverwatchstore_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eussaoverwatchstore_name'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+            "apiVersion": "2019-04-01",
+            "name": "[concat(parameters('storageAccounts_eussaoverwatchstore_name'), '/default/scm-releases')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccounts_eussaoverwatchstore_name'), 'default')]",
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_eussaoverwatchstore_name'))]"
+            ],
+            "properties": {
+                "publicAccess": "None"
+            }
+        },
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2017-07-01",
+            "name": "[parameters('WF_Email_Sec_Alert')]",
+            "location": "eastus",
+            "dependsOn": [
+                "[resourceId('Microsoft.Logic/integrationAccounts', parameters('IntegrationAccount_EastUS_SBox2_OverWatch'))]",
+                "[resourceId('Microsoft.Web/connections', parameters('connections_ascalert_name'))]",
+                "[resourceId('Microsoft.Web/connections', parameters('connections_azuretables_name'))]",
+                "[resourceId('Microsoft.Web/connections', parameters('connections_sendgrid_1_name'))]"
+            ],
+            "tags": {
+                "CostCenter": "Shyam Test"
+            },
+            "identity": {
+                "principalId": "",
+                "tenantId": "",
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "state": "Enabled",
+                "integrationAccount": {
+                    "id": "[resourceId('Microsoft.Logic/integrationAccounts', parameters('IntegrationAccount_EastUS_SBox2_OverWatch'))]"
+                },
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "When_an_Azure_Security_Center_Alert_is_created_or_triggered": {
+                            "type": "ApiConnectionWebhook",
+                            "inputs": {
+                                "body": {
+                                    "callback_url": "@{listCallbackUrl()}"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['ascalert']['connectionId']"
+                                    }
+                                },
+                                "path": "/Microsoft.Security/Alert/subscribe"
+                            }
+                        }
+                    },
+                    "actions": {
+                        "Execute_JavaScript_Code": {
+                            "runAfter": {},
+                            "type": "JavaScriptCode",
+                            "inputs": {
+                                "code": "var resourceId = workflowContext.trigger.outputs.body.AzureResourceId;\r\n\r\nvar splits = resourceId.split('/');\r\nreturn splits[2];"
+                            }
+                        },
+                        "Get_entity": {
+                            "runAfter": {
+                                "Insert_Entity": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "/Tables/@{encodeURIComponent('eustsdevtstoverwatchsubscriptions')}/entities(PartitionKey='@{outputs('Execute_JavaScript_Code')?['body']}',RowKey='@{outputs('Execute_JavaScript_Code')?['body']}')"
+                            }
+                        },
+                        "Insert_Entity": {
+                            "runAfter": {
+                                "Execute_JavaScript_Code": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": {
+                                    "AlertDisplayName": "@{triggerBody()?['AlertDisplayName']}",
+                                    "AlertType": "@{triggerBody()?['AlertType']}",
+                                    "AzureResourceId": "@{triggerBody()?['AzureResourceId']}",
+                                    "CompromisedEntity": "@{triggerBody()?['CompromisedEntity']}",
+                                    "Description": "@{triggerBody()?['Description']}",
+                                    "LastNotificationTime": "@{utcNow()}",
+                                    "PartitionKey": "@{body('Execute_JavaScript_Code')}",
+                                    "RowKey": "@{triggerBody()?['SystemAlertId']}",
+                                    "Severity": "@{triggerBody()?['Severity']}"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['azuretables']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/Tables/@{encodeURIComponent('eustsdevtstoverwatchalerts')}/entities"
+                            }
+                        },
+                        "Send_email_(V3)": {
+                            "runAfter": {
+                                "Get_entity": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": {
+                                    "cc": "max+azure@runascloud.com",
+                                    "from": "overwatch-alerts@bcg.com",
+                                    "ishtml": true,
+                                    "subject": "[[[Security Center Alert] [Subscription : @{body('Get_entity')?['SubscriptionName']}] - @{triggerBody()?['AlertDisplayName']}",
+                                    "text": "<p>Hi,<br>\n<br>\nThere was an alert triggered on a resource in your Azure account:<br>\n<br>\n* @{triggerBody()?['AlertDisplayName']}<br>\n* @{triggerBody()?['Description']}<br>\n* @{triggerBody()?['AlertType']}<br>\n* @{triggerBody()?['AlertUri']}<br>\n* @{triggerBody()?['CompromisedEntity']}<br>\n* @{triggerBody()?['Severity']}<br>\n<br>\n<br>\nThanks</p>",
+                                    "to": "@{body('Get_entity')?['Owners']}"
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['sendgrid_1']['connectionId']"
+                                    }
+                                },
+                                "method": "post",
+                                "path": "/v3/mail/send"
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "ascalert": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_ascalert_name'))]",
+                                "connectionName": "ascalert",
+                                "id": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/ascalert"
+                            },
+                            "azuretables": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_azuretables_name'))]",
+                                "connectionName": "azuretables",
+                                "id": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/azuretables"
+                            },
+                            "sendgrid_1": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('connections_sendgrid_1_name'))]",
+                                "connectionName": "sendgrid-1",
+                                "id": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/providers/Microsoft.Web/locations/eastus/managedApis/sendgrid"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}

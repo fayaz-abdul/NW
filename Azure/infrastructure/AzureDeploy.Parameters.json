@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ServerFarm_EastUSLinuxDynamicPlan": {
+            "value": "EastUSLinuxDynamicPlanSbox2"
+        },
+        "Sites_EastUS_FuncApp_SBox2_OverWatch": {
+            "value": "EastUS-FuncApp-SBox2-OverWatch"
+        },
+        "components_eusoverwatchfuncstor_name": {
+            "value": "eusoverwatchfuncstor"
+        },
+        "storageAccounts_eusoverwatchfuncstor_name": {
+            "value": "eusoverwatchfuncstor"
+        },
+        "smartdetectoralertrules_failure_anomalies___eusoverwatchfuncstor_name": {
+            "value": "failure anomalies - eusoverwatchfuncstor"
+        },
+        "actiongroups_application_20insights_20smart_20detection_externalid": {
+            "value": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/resourceGroups/rg-overwatch-sbox2/providers/microsoft.insights/actiongroups/application%20insights%20smart%20detection"
+        },
+        "connections_ascalert_name": {
+            "value": "ascalert"
+        },
+        "connections_sendgrid_name": {
+            "value": "sendgrid"
+        },
+        "connections_sendgrid_1_name": {
+            "value": "sendgrid-1"
+        },
+        "connections_sendgrid_2_name": {
+            "value": "sendgrid-2"
+        },
+        "connections_azuretables_name": {
+            "value": "azuretables"
+        },
+        "connections_ascassessment_name": {
+            "value": "ascassessment"
+        },
+        "storageAccounts_eussaoverwatchstore_name": {
+            "value": "eusoverwatchstor"
+        },
+        "serverfarms_ASP_EUSRSGDEVTSToverwatchalerts_8161_name": {
+            "value": "ASP-EUSRSGDEVTSToverwatchalerts-8161"
+        },
+        "WF_Email_Sec_Alert": {
+            "value": "EastUS-LogicApp-SBox2-OverWatch-Email-Sec-Alert"
+        },
+        "WF_Tag_Compliance_Check": {
+            "value": "EastUS-LogicApp-SBox2-Tag-Compliance-Check"
+        },
+        "Components_EastUS_FuncApp_SBox2_OverWatch_Fetch_Details": {
+            "value": "EastUS-FuncApp-SBox2-OverWatch-Fetch-Details"
+        },
+        "workflows_EUS_LA_DEVTST_send_scheduled_email_for_alert_name": {
+            "value": "EUS-LA-DEVTST-send-scheduled-email-for-alert"
+        },
+        "IntegrationAccount_EastUS_SBox2_OverWatch": {
+            "value": "EastUS-IntAcct-SBox2-OverWatch"
+        },
+        "workflows_EUS_LA_DEVTST_handle_policy_compliance_alerts_name": {
+            "value": "EUS-LA-DEVTST-handle-policy-compliance-alerts"
+        },
+        "Sites_EastUS_FuncApp_SBox2_OverWatch_ExternalID": {
+            "value": "/subscriptions/1b749516-1e98-4b8a-96dd-c63af07cdc45/resourceGroups/rg-overwatch-sbox2/providers/Microsoft.Web/sites/EUS-FA-DEVTST-overwatch-functions2"
+        }
+    }
+}
